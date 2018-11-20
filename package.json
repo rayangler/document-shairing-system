@@ -1,0 +1,16 @@
+{
+  "name": "softwair-project",
+  "version": "1.0.0",
+  "description": "A document sharing/editing system for Software Engineerig class.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SoftwAIR Company",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-handlebars": "^3.0.0",
+    "pg": "^7.6.1"
+  }
+}
