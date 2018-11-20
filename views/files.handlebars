@@ -1,0 +1,29 @@
+<div id="files_table">
+  <div id="heading">
+    <h1>{{data.name}}'s Files</h1>
+    <form action="/create_new_file" method="post">
+      <input type="submit" value="+ Create New File">
+    </form>
+  </div>
+  <div id="file_search">
+    <form action="/files/{{data.user_id}}/search" method="post">
+      <input type="text" placeholder="Search Files" name="search_info">
+      <input type="submit" value="Search">
+    </form>
+    <br/>
+  </div>
+  <table>
+    <tr>
+      <th>File Name</th>
+      <th>Current Version</th>
+      <th>Last Updated</th>
+    </tr>
+    {{#each data.rows}}
+      <tr>
+        <td>{{file_name}}</td>
+        <td>{{current_version}}</td>
+        <td>{{created_on}}</td>
+      </tr>
+    {{/each}}
+  </table>
+</div>

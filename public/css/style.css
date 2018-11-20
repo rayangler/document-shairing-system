@@ -1,0 +1,160 @@
+body {
+  margin: 1em;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+
+#login {
+  font-size: large;
+  margin-top: 7em;
+  padding: 1em;
+  display: flex;
+  justify-content: space-around;
+}
+
+#login form {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  height: 25em;
+  width: 25em;
+  text-align: center;
+  border-style: solid;
+  border-width: medium;
+  border-color: #5DA2D5;
+  border-radius: 1em;
+  color: #5DA2D5;
+}
+
+input[type=submit] {
+  background: #5DA2D5;
+  font-size: large;
+  color: white;
+  border-radius: 1em;
+  padding: 0.5em;
+}
+
+#nav {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #5DA2D5;
+}
+
+#nav li {
+  float: left;
+}
+
+#nav li a {
+  display: block;
+  font-size: large;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+#create_profile_div {
+  display: flex;
+  justify-content: center;
+  margin-top: 8em;
+}
+
+#create_profile {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  height: 25em;
+  width: 25em;
+  text-align: center;
+  border-style: solid;
+  border-width: medium;
+  border-color: #5DA2D5;
+  border-radius: 1em;
+  color: #5DA2D5;
+}
+
+#create_profile div {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+#profile {
+  display: flex;
+  flex-flow: row;
+  margin-top: 1em;
+}
+
+#profile #main_info {
+  margin-left: 1em;
+}
+
+#files_table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#files_table td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 1em;
+}
+
+#files_table tr:nth-child(even) {
+  background-color: #6699cc;
+}
+
+#heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#file_search {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1em;
+}
+
+#file_search input[type=text] {
+  width: 20em;
+  height: 2em;
+  border-style: solid;
+  border-color: #6699cc;
+}
+
+#center {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+}
+
+#center textarea {
+  width: 80em;
+  height: 100em;
+}
+
+#lhs_file_gui form {
+  display: flex;
+  flex-flow: column;
+}
+
+#file #top {
+  margin-left: 1.5em;
+}
+
+button {
+  background: #5DA2D5;
+  font-size: large;
+  color: white;
+  border-radius: 1em;
+  padding: 0.5em;
+  margin-bottom: 1em;
+  width: 12em;
+}
+
+#file #lhs_file_gui, #rhs_file_gui {
+  margin-top: 4em;
+}
