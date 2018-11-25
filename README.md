@@ -6,7 +6,7 @@ To clone the repository, enter the following command in your terminal:
 ```
 git clone https://github.com/rayangler/document-shairing-system
 ```
-Make sure to have a Node.js with npm installed. You can use Homebrew, downloaded from https://brew.sh/. Use `brew install node` to get the latest version of Node and npm. Alternatively, Node can also be found here: https://nodejs.org/en/.
+Make sure to have Node.js with npm installed. You can use Homebrew, downloaded from https://brew.sh/. Use `brew install node` to get the latest version of Node and npm. Alternatively, Node can also be found here: https://nodejs.org/en/.
 
 To make sure Node and npm were installed properly, use the following commands in your terminal:
 ```
