@@ -3,7 +3,7 @@ A group project for CSC 32200: Software Engineering. The project requires us to 
 
 ## Getting Started
 To get started, you must have the following downloaded and/or installed:
-- Cloned github repo
+- Forked/cloned github repo
 - Node.js and npm
 - PostgreSQL
 
