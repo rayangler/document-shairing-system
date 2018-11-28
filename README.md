@@ -3,19 +3,17 @@ A group project for CSC 32200: Software Engineering. The project requires us to 
 
 ## Getting Started
 To get started, you must have the following downloaded and/or installed:
-- Forked/cloned github repo
+- Cloned github repo
 - Node.js and npm
 - PostgreSQL
 
 ## Setting Up Directory
-If contributing to this project, you might want to start by forking this project to create a copy of it on your Github account. You can follow the steps to set it up [here](https://help.github.com/articles/fork-a-repo/). Make sure to check out related links in the documentation to help with syncing and making pull requests.
-
-If you just want to check out the project, feel free to clone it. To clone the repository, enter the following command in your terminal:
+To clone the repository, enter the following command in your terminal:
 ```
 $ git clone https://github.com/rayangler/document-shairing-system
 ```
 
-Make sure to have Node.js with npm installed. You can use Homebrew, downloaded from https://brew.sh/. Use `brew install node` to get the latest version of Node and npm. Alternatively, Node can also be found here: https://nodejs.org/en/.
+Make sure to have Node.js with npm installed. You can use Homebrew, downloaded from https://brew.sh/. Use `brew install node` to get the latest version of Node and npm. Alternatively, Node can also be found [here](https://nodejs.org/en/).
 
 To make sure Node and npm were installed properly, use the following commands in your terminal:
 ```
