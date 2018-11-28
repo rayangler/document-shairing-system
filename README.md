@@ -8,16 +8,19 @@ To get started, you must have the following downloaded and/or installed:
 - PostgreSQL
 
 ## Setting Up Directory
-To clone the repository, enter the following command in your terminal:
+If contributing to this project, you might want to start by forking this project to create a copy of it on your Github account. You can follow the steps to set it up [here](https://help.github.com/articles/fork-a-repo/). Make sure to check out related links in the documentation to help with syncing and making pull requests.
+
+If you just want to check out the project, feel free to clone it. To clone the repository, enter the following command in your terminal:
 ```
-git clone https://github.com/rayangler/document-shairing-system
+$ git clone https://github.com/rayangler/document-shairing-system
 ```
+
 Make sure to have Node.js with npm installed. You can use Homebrew, downloaded from https://brew.sh/. Use `brew install node` to get the latest version of Node and npm. Alternatively, Node can also be found here: https://nodejs.org/en/.
 
 To make sure Node and npm were installed properly, use the following commands in your terminal:
 ```
-node -v
-npm -v
+$ node -v
+$ npm -v
 ```
 After Node and npm are properly installed, go to the cloned directory and use `npm install` to install of the dependencies and packages needed for the project to work.
 
