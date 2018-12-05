@@ -25,15 +25,6 @@ app.get('/', (req, res) => {
   res.render('login');
 });
 
-// Profile from navbar. Redirects to logged in user's profile page.
-app.get('/profile', (req, res) => {
-  if (!app.get('userId')) {
-    res.redirect('/');
-    return;
-  }
-  res.redirect('/profile/' + app.get('userId'));
-});
-
 // Profile creation page for new users.
 app.get('/create_profile', (req, res) => {
   res.render('create_profile');
