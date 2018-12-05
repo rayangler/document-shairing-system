@@ -136,6 +136,9 @@ module.exports = {
   getLoginInfo: (params) => {
     return getInfo(queryLoginUser, params);
   },
+  getProfilePage: (params) => {
+    return getInfo(queryProfilePage, params);
+  },
   getUserFiles: (params) => {
     return getInfo(queryUserFiles, params);
   },

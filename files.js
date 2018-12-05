@@ -7,6 +7,15 @@ const db = require('./db');
 
 module.exports = router;
 
+// My Files from navbar. Redirects to files for logged in user.
+router.get('/', (req, res) => {
+  if (!req.app.get('userId')) {
+    res.redirect('/');
+    return;
+  }
+  res.redirect(req.baseUrl + '/' + req.app.get('userId'));
+});
+
 // Goes to a page of all of the user's files, based on user id in the route.
 router.get('/:user_id', async (req, res) => {
   if(!req.app.get('userId')) {

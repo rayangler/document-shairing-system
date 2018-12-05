@@ -16,20 +16,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, '/public'))); // Used to access css file(s)
 
 // Routes
-app.use('/files', require('./files'));
 app.use('/file', require('./file'));
-
-// Local functions:
-// Loads users' files in /files/:id
-function loadFilesPage(res, results) {
-  var data = {};
-  console.log(results);
-  data.rows = results.rows;
-  data.name = results.rows[0].name;
-  data.user_id = app.get('userId');
-  console.log(data);
-  res.render('files', {data});
-}
+app.use('/files', require('./files'));
+app.use('/profile', require('./profile'));
 
 // Landing page.
 app.get('/', (req, res) => {
@@ -48,28 +37,6 @@ app.get('/profile', (req, res) => {
 // Profile creation page for new users.
 app.get('/create_profile', (req, res) => {
   res.render('create_profile');
-});
-
-// Profile page for user with id in params.
-app.get('/profile/:id', (req, res) => {
-  const id = req.params.id;
-  client.query(queryProfilePage, [id], (errors, results) => {
-    if (errors) console.log(errors.stack);
-    else {
-      var data = results.rows[0];
-      console.log(data);
-      res.render('profile', data);
-    }
-  });
-});
-
-// My Files from navbar. Redirects to files for logged in user.
-app.get('/my_files', (req, res) => {
-  if (!app.get('userId')) {
-    res.redirect('/');
-    return;
-  }
-  res.redirect('/files/' + app.get('userId'));
 });
 
 // Creates new file with default values and inserts it to database.
