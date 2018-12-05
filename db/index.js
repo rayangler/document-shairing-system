@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS files(
   user_id INTEGER REFERENCES users(id),
   file_name TEXT DEFAULT 'Untitled_File',
   current_version TEXT DEFAULT '1',
-  created_on TIMESTAMPTZ
+  created_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );`;
 // Invites Table. A table for the invites between users to files.
 const createInvitesTable = `
@@ -71,8 +71,8 @@ const queryInsertUser = `INSERT INTO users(username, email)
 VALUES($1, $2) RETURNING id`;
 const queryInsertProfile = `INSERT INTO profiles(user_id, name, picture_url, bio)
 VALUES($1, $2, $3, $4)`;
-const queryCreateNewFile = `INSERT INTO files(user_id, created_on)
-VALUES ($1, $2) RETURNING id`;
+const queryCreateNewFile = `INSERT INTO files(user_id)
+VALUES ($1) RETURNING id`;
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
 
@@ -129,6 +129,9 @@ module.exports = {
   },
   insertNewUser: (params) => {
     return insertInfo(queryInsertUser, params, true);
+  },
+  insertNewFile: (params) => {
+    return insertInfo(queryCreateNewFile, params, true);
   },
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);

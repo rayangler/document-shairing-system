@@ -40,16 +40,9 @@ app.get('/create_profile', (req, res) => {
 });
 
 // Creates new file with default values and inserts it to database.
-app.post('/create_new_file', (req, res) => {
-  const timestamp = new Date().toISOString();
-  // For final version, have a 'version_history' table to maintain all versions of
-  // files.
-  client.query(queryCreateNewFile, [app.get('userId'), timestamp], (errors, results) => {
-    if (errors) console.log(errors.stack);
-    else {
-      res.redirect('/file/' + results.rows[0].id);
-    }
-  });
+app.post('/create_new_file', async (req, res) => {
+  var rows = await db.insertNewFile([app.get('userId')]);
+  res.redirect('/file/' + rows[0].id);
 });
 
 // Creating a new user.
