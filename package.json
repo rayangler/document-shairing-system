@@ -9,8 +9,10 @@
   "author": "SoftwAIR Company",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
+    "express-promise-router": "^3.0.3",
     "pg": "^7.6.1"
   }
 }
