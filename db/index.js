@@ -66,7 +66,7 @@ client.query(createInvitesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 
-// Queries
+// Inserts
 const queryInsertUser = `INSERT INTO users(username, email)
 VALUES($1, $2) RETURNING id`;
 const queryInsertProfile = `INSERT INTO profiles(user_id, name, picture_url, bio)
@@ -76,6 +76,7 @@ VALUES ($1) RETURNING id`;
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
 
+// Selects
 const queryLoginUser = `
 SELECT * FROM users
 WHERE username = $1 AND email = $2;`;
@@ -103,12 +104,19 @@ ORDER BY created_on DESC;`;
 const queryInviteValidUsers = `
 SELECT username FROM users
 WHERE username != $1 AND NOT EXISTS
-(SELECT 1 FROM invites WHERE to_user = username AND file_id = $2)
+(SELECT 1 FROM invites WHERE to_user = username AND file_id = $2 AND status = 'accepted')
 ORDER BY username ASC;`;
 const queryInvitedUsers = `
 SELECT * FROM invites
-WHERE file_id = $1
+WHERE file_id = $1 AND status = 'pending'
 ORDER BY to_user ASC;`;
+
+// Updates
+const queryCancelInvite = `
+UPDATE invites
+SET status = 'cancelled'
+WHERE to_user = $1 AND from_user = $2 AND file_id = $3;
+`
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -153,5 +161,8 @@ module.exports = {
   },
   getValidUsersForInvite: (params) => {
     return getInfo(queryInviteValidUsers, params);
+  },
+  cancelInvite: (params) => {
+    return client.query(queryCancelInvite, params);
   }
 }

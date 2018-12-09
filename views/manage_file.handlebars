@@ -9,7 +9,12 @@
         <button formaction="/file/{{data.file_id}}/manage/invites">Invites</button>
       </form>
     </div>
-    <div class="display_content">
+    <div class="content">
+      {{#if data.users}}
+        {{> file_users this}}
+      {{else if data.invites}}
+        {{> file_invites this}}
+      {{/if}}
 
     </div>
   </div>

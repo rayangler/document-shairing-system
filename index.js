@@ -74,4 +74,10 @@ app.post('/login_user', async (req, res) => {
   res.redirect('/files/' + userId);
 });
 
+const hbs = hb.create();
+
+hbs.getPartials().then(function(partials) {
+  console.log(partials);
+});
+
 app.listen(port);

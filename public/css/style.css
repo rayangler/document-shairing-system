@@ -91,12 +91,12 @@ input[type=submit] {
   margin-left: 1em;
 }
 
-#files_table table {
+table {
   border-collapse: collapse;
   width: 100%;
 }
 
-#files_table td, th {
+table td, th {
   border: 1px solid #dddddd;
   text-align: left;
   padding: 1em;
