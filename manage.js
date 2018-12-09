@@ -8,7 +8,7 @@ const db = require('./db');
 module.exports = router;
 
 router.get('/', async (req, res) => {
-  const file_id = req.app.get('file_id');
+  const file_id = req.file_id;
   var data = {};
   data.invited_users = await db.getInvitedUsers([file_id]);
   data.valid_users = await db.getValidUsersForInvite([req.app.get('username'), file_id]);

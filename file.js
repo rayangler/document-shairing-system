@@ -19,4 +19,7 @@ router.get('/:file_id', async (req, res) => {
   res.render('file', data);
 })
 
-router.use('/:file_id/manage', require('./manage'));
+router.use('/:file_id/manage', (req, res, next) => {
+  req.file_id = req.params.file_id;
+  next();
+}, require('./manage'));
