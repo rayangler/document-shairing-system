@@ -17,7 +17,7 @@ router.get('/permissions', async (req, res) => {
   data.file_id = req.file_id;
   data.base_url = req.baseUrl;
   data.publicity = await db.getFilePublicity([req.file_id]);
-  data.active_collaborators = await db.getAcceptedInvites([req.file_id]);
+  data.active_collaborators = await db.getCollaborators([req.file_id]);
   data.non_blacklisted_users = await db.getNonBlacklistedUsers([req.app.get('userId'), req.file_id]);
   data.blacklisted_users = await db.getBlacklistedUsers([req.file_id]);
   console.log({data});
@@ -31,7 +31,7 @@ router.post('/change_publicity', (req, res) => {
 });
 
 router.post('/remove_user', (req, res) => {
-  db.removeUserFromFile([req.body.to_user, req.file_id]);
+  db.removeCollaborator([req.body.to_user, req.file_id]);
   res.redirect('back');
 });
 
@@ -66,8 +66,7 @@ router.post('/invite_user', (req, res) => {
 
 router.post('/cancel_invite', (req, res) => {
   const to_user = req.body.to_user;
-  const from_user = req.body.from_user;
   const file_id = req.file_id;
-  db.cancelInvite([to_user, from_user, file_id]);
+  db.cancelInvite([to_user, file_id]);
   res.redirect('back');
 });

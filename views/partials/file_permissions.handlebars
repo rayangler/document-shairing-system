@@ -71,10 +71,10 @@
       </tr>
       {{#each data.active_collaborators}}
         <tr>
-          <td>{{to_user}}</td>
+          <td>{{username}}</td>
           <td>
             <form action="{{../data.base_url}}/remove_user" method="post">
-              <input type="hidden" name="to_user" value="{{to_user}}">
+              <input type="hidden" name="to_user" value="{{username}}">
               <input type="submit" value="Remove" style="font-size: small">
             </form>
           </td>

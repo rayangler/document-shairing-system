@@ -53,6 +53,13 @@ CREATE TABLE IF NOT EXISTS invites(
   invited_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(255) DEFAULT 'pending'
 );`;
+// Collaborators Table. A table for users who have accepted their invites to edit files.
+const createCollaboratorsTable = `
+CREATE TABLE IF NOT EXISTS collaborators(
+  username VARCHAR(255) REFERENCES users(username),
+  file_id INTEGER REFERENCES files(id)
+);`
+// Blacklist Table. A table for blacklisted users for each file.
 const createBlacklistTable = `
 CREATE TABLE IF NOT EXISTS blacklist(
   user_id INTEGER REFERENCES users(id),
@@ -69,6 +76,9 @@ client.query(createFilesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 client.query(createInvitesTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createCollaboratorsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 client.query(createBlacklistTable, (err, res) => {
@@ -118,8 +128,13 @@ const queryInviteValidUsers = `
 SELECT username FROM users
 WHERE username != $1 AND NOT EXISTS
 (SELECT 1 FROM invites
-  WHERE to_user = username AND file_id = $2 AND
-  (status = 'pending' OR status = 'accepted'))
+  WHERE to_user = username AND file_id = $2)
+AND NOT EXISTS
+(SELECT 1 FROM collaborators
+  WHERE collaborators.username = users.username AND file_id = $2)
+AND NOT EXISTS
+(SELECT 1 FROM blacklist
+  WHERE blacklist.user_id = users.id AND file_id = $2)
 ORDER BY username ASC;`;
 const queryInvitedUsers = `
 SELECT * FROM invites
@@ -128,9 +143,9 @@ ORDER BY to_user ASC;`;
 const queryFilePublicity = `
 SELECT publicity FROM files
 WHERE id = $1;`;
-const queryAcceptedInvites = `
-SELECT to_user FROM invites
-WHERE file_id = $1 and status = 'accepted';`;
+const queryCollaborators = `
+SELECT username FROM collaborators
+WHERE file_id = $1;`;
 const queryNonBlacklisted = `
 SELECT username FROM users
 WHERE id != $1 AND NOT EXISTS
@@ -143,20 +158,18 @@ JOIN blacklist ON users.id = blacklist.user_id
 WHERE file_id = $1;`;
 
 // Updates
-const queryCancelInvite = `
-UPDATE invites
-SET status = 'cancelled'
-WHERE to_user = $1 AND from_user = $2 AND file_id = $3;`;
 const queryUpdatePublicity = `
 UPDATE files
 SET publicity = $1
 WHERE id = $2;`;
-const queryRemoveUser = `
-UPDATE invites
-SET status = 'removed'
-WHERE to_user = $1 AND file_id = $2 AND status = 'accepted';`;
 
 // Deletion
+const queryRemoveCollaborator = `
+DELETE FROM collaborators
+WHERE username = $1 AND file_id = $2;`;
+const queryCancelInvite = `
+DELETE FROM invites
+WHERE to_user = $1 AND file_id = $2;`;
 const queryRemoveBlacklisted = `
 DELETE FROM blacklist
 WHERE file_id = $1 AND user_id =
@@ -207,8 +220,8 @@ module.exports = {
     var rows = await getInfo(queryFilePublicity, params);
     return rows[0].publicity;
   },
-  getAcceptedInvites: (params) => {
-    return getInfo(queryAcceptedInvites, params);
+  getCollaborators: (params) => {
+    return getInfo(queryCollaborators, params);
   },
   getNonBlacklistedUsers: (params) => {
     return getInfo(queryNonBlacklisted, params);
@@ -228,8 +241,8 @@ module.exports = {
   updatePublicity: (params) => {
     return client.query(queryUpdatePublicity, params);
   },
-  removeUserFromFile: (params) => {
-    return client.query(queryRemoveUser, params);
+  removeCollaborator: (params) => {
+    return client.query(queryRemoveCollaborator, params);
   },
   removeBlacklistedUser: (params) => {
     return client.query(queryRemoveBlacklisted, params);
