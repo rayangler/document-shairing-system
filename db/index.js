@@ -60,8 +60,8 @@ CREATE TABLE IF NOT EXISTS collaborators(
   file_id INTEGER REFERENCES files(id)
 );`
 // Blacklist Table. A table for blacklisted users for each file.
-const createBlacklistTable = `
-CREATE TABLE IF NOT EXISTS blacklist(
+const createUsersBlacklistTable = `
+CREATE TABLE IF NOT EXISTS users_blacklist(
   user_id INTEGER REFERENCES users(id),
   file_id INTEGER REFERENCES files(id)
 );`;
@@ -81,7 +81,7 @@ client.query(createInvitesTable, (err, res) => {
 client.query(createCollaboratorsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
-client.query(createBlacklistTable, (err, res) => {
+client.query(createUsersBlacklistTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 
@@ -93,7 +93,7 @@ VALUES($1, $2, $3, $4)`;
 const queryCreateNewFile = `INSERT INTO files(user_id)
 VALUES ($1) RETURNING id`;
 const queryBlacklistUser = `
-INSERT INTO blacklist(user_id, file_id)
+INSERT INTO users_blacklist(user_id, file_id)
 SELECT users.id, $1 FROM users
 WHERE username = $2;`
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
@@ -134,8 +134,8 @@ AND NOT EXISTS
 (SELECT 1 FROM collaborators
   WHERE collaborators.username = users.username AND file_id = $2)
 AND NOT EXISTS
-(SELECT 1 FROM blacklist
-  WHERE blacklist.user_id = users.id AND file_id = $2)
+(SELECT 1 FROM users_blacklist
+  WHERE users_blacklist.user_id = users.id AND file_id = $2)
 ORDER BY username ASC;`;
 const queryPendingInvites = `
 SELECT from_user, file_id, file_name, invited_on FROM invites
@@ -151,15 +151,15 @@ WHERE id = $1;`;
 const queryCollaborators = `
 SELECT username FROM collaborators
 WHERE file_id = $1;`;
-const queryNonBlacklisted = `
+const queryNonBlacklistedUsers = `
 SELECT username FROM users
 WHERE id != $1 AND NOT EXISTS
-  (SELECT 1 FROM blacklist
-    JOIN users AS u ON users.id = blacklist.user_id
-    WHERE u.username = username AND blacklist.file_id = $2);`;
-const queryBlacklisted = `
+  (SELECT 1 FROM users_blacklist
+    JOIN users AS u ON users.id = users_blacklist.user_id
+    WHERE u.username = username AND users_blacklist.file_id = $2);`;
+const queryBlacklistedUsers = `
 SELECT username FROM users
-JOIN blacklist ON users.id = blacklist.user_id
+JOIN users_blacklist ON users.id = users_blacklist.user_id
 WHERE file_id = $1;`;
 
 // Updates
@@ -175,8 +175,8 @@ WHERE username = $1 AND file_id = $2;`;
 const queryCancelInvite = `
 DELETE FROM invites
 WHERE to_user = $1 AND file_id = $2;`;
-const queryRemoveBlacklisted = `
-DELETE FROM blacklist
+const queryRemoveBlacklistedUser = `
+DELETE FROM users_blacklist
 WHERE file_id = $1 AND user_id =
   (SELECT id FROM users WHERE username = $2);`
 
@@ -229,10 +229,10 @@ module.exports = {
     return getInfo(queryCollaborators, params);
   },
   getNonBlacklistedUsers: (params) => {
-    return getInfo(queryNonBlacklisted, params);
+    return getInfo(queryNonBlacklistedUsers, params);
   },
   getBlacklistedUsers: (params) => {
-    return getInfo(queryBlacklisted, params);
+    return getInfo(queryBlacklistedUsers, params);
   },
   getInvitedUsers: (params) => {
     return getInfo(queryInvitedUsers, params);
@@ -260,6 +260,6 @@ module.exports = {
     return client.query(queryRemoveCollaborator, params);
   },
   removeBlacklistedUser: (params) => {
-    return client.query(queryRemoveBlacklisted, params);
+    return client.query(queryRemoveBlacklistedUser, params);
   }
 }
