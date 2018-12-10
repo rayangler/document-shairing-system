@@ -173,7 +173,7 @@ table td, th {
   margin-left: 1.5em;
 }
 
-button {
+.button {
   background: #5DA2D5;
   font-size: large;
   color: white;

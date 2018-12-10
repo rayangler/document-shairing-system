@@ -53,14 +53,14 @@ CREATE TABLE IF NOT EXISTS invites(
   invited_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(255) DEFAULT 'pending'
 );`;
-<<<<<<< HEAD
+
 // Taboo Blacklist Table. A table for the list of taboo words in the system.
 const createTabooTable = `
 CREATE TABLE IF NOT EXISTS tabooBlacklist(
   taboo_word VARCHAR(255) NOT NULL UNIQUE,
   CHECK (taboo_word <> ''),
   submitted_by VARCHAR(255) REFERENCES users(username)
-=======
+);`
 // Collaborators Table. A table for users who have accepted their invites to edit files.
 const createCollaboratorsTable = `
 CREATE TABLE IF NOT EXISTS collaborators(
@@ -72,7 +72,6 @@ const createUsersBlacklistTable = `
 CREATE TABLE IF NOT EXISTS users_blacklist(
   user_id INTEGER REFERENCES users(id),
   file_id INTEGER REFERENCES files(id)
->>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
 );`;
 
 client.query(createUsersTable, (err, res) => {
@@ -87,14 +86,13 @@ client.query(createFilesTable, (err, res) => {
 client.query(createInvitesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
-<<<<<<< HEAD
 client.query(createTabooTable, (err, res) => {
-=======
+  if (err) console.log(err.stack);
+});
 client.query(createCollaboratorsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 client.query(createUsersBlacklistTable, (err, res) => {
->>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
   if (err) console.log(err.stack);
 });
 
@@ -111,14 +109,11 @@ SELECT users.id, $1 FROM users
 WHERE username = $2;`
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
-<<<<<<< HEAD
 const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
 VALUES($1, $2)`;
-=======
 const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
 
 // Selects
->>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
 const queryLoginUser = `
 SELECT * FROM users
 WHERE username = $1 AND email = $2;`;
@@ -163,11 +158,9 @@ const queryInvitedUsers = `
 SELECT * FROM invites
 WHERE file_id = $1 AND status = 'pending'
 ORDER BY to_user ASC;`;
-<<<<<<< HEAD
 const queryTabooWords = `
 SELECT * FROM tabooBlacklist
 ORDER BY taboo_word ASC;`;
-=======
 const queryFilePublicity = `
 SELECT publicity FROM files
 WHERE id = $1;`;
@@ -202,7 +195,7 @@ const queryRemoveBlacklistedUser = `
 DELETE FROM users_blacklist
 WHERE file_id = $1 AND user_id =
   (SELECT id FROM users WHERE username = $2);`
->>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
+
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -270,10 +263,9 @@ module.exports = {
   getValidUsersForInvite: (params) => {
     return getInfo(queryInviteValidUsers, params);
   },
-<<<<<<< HEAD
   getTabooWords: (params) => {
     return getInfo(queryTabooWords, params);
-=======
+  },
   cancelInvite: (params) => {
     return client.query(queryCancelInvite, params);
   },
@@ -292,6 +284,5 @@ module.exports = {
   },
   removeBlacklistedUser: (params) => {
     return client.query(queryRemoveBlacklistedUser, params);
->>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
   }
 }
