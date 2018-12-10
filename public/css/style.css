@@ -106,6 +106,34 @@ table td, th {
   background-color: #6699cc;
 }
 
+#blacklist_table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#blacklist_table td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 1em;
+}
+
+#blacklist_table tr:nth-child(even) {
+  background-color: #6699cc;
+}
+
+#submit_taboo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1em;
+}
+
+#submit_taboo input[type=text] {
+  width: 20em;
+  height: 2em;
+  border-style: solid;
+  border-color: #6699cc;
+}
+
 #heading {
   display: flex;
   align-items: center;

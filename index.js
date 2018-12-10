@@ -20,6 +20,7 @@ app.use('/file', require('./file'));
 app.use('/files', require('./files'));
 app.use('/inbox', require('./inbox'));
 app.use('/profile', require('./profile'));
+app.use('/blacklist', require('./blacklist'));
 
 // Landing page.
 app.get('/', (req, res) => {
@@ -29,6 +30,10 @@ app.get('/', (req, res) => {
 // Profile creation page for new users.
 app.get('/create_profile', (req, res) => {
   res.render('create_profile');
+});
+
+app.get('/blacklist', (req, res) => {
+  res.render('blacklist');
 });
 
 // Creates new file with default values and inserts it to database.
@@ -75,10 +80,13 @@ app.post('/login_user', async (req, res) => {
   res.redirect('/files/' + userId);
 });
 
+<<<<<<< HEAD
+=======
 const hbs = hb.create();
 
 hbs.getPartials().then(function(partials) {
   console.log(partials);
 });
+>>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
 
 app.listen(port);

@@ -17,7 +17,8 @@ router.get('/:file_id', async (req, res) => {
   req.app.set('file_id', file_id);
   console.log(data);
   res.render('file', data);
-})
+});
+
 
 router.use('/:file_id/manage', (req, res, next) => {
   req.file_id = req.params.file_id;
