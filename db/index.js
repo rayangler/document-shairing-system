@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS files(
   user_id INTEGER REFERENCES users(id),
   file_name TEXT DEFAULT 'Untitled_File',
   current_version TEXT DEFAULT '1',
-  created_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+  created_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  publicity VARCHAR(255) DEFAULT 'public'
 );`;
 // Invites Table. A table for the invites between users to files.
 const createInvitesTable = `
@@ -51,6 +52,11 @@ CREATE TABLE IF NOT EXISTS invites(
   file_id INTEGER REFERENCES files(id),
   invited_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(255) DEFAULT 'pending'
+);`;
+const createBlacklistTable = `
+CREATE TABLE IF NOT EXISTS blacklist(
+  user_id INTEGER REFERENCES users(id),
+  file_id INTEGER REFERENCES files(id)
 );`;
 
 client.query(createUsersTable, (err, res) => {
@@ -63,6 +69,9 @@ client.query(createFilesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 client.query(createInvitesTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createBlacklistTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 
@@ -104,19 +113,44 @@ ORDER BY created_on DESC;`;
 const queryInviteValidUsers = `
 SELECT username FROM users
 WHERE username != $1 AND NOT EXISTS
-(SELECT 1 FROM invites WHERE to_user = username AND file_id = $2 AND status = 'accepted')
+(SELECT 1 FROM invites
+  WHERE to_user = username AND file_id = $2 AND
+  (status = 'pending' OR status = 'accepted'))
 ORDER BY username ASC;`;
 const queryInvitedUsers = `
 SELECT * FROM invites
 WHERE file_id = $1 AND status = 'pending'
 ORDER BY to_user ASC;`;
+const queryFilePublicity = `
+SELECT publicity FROM files
+WHERE id = $1;`;
+const queryAcceptedInvites = `
+SELECT to_user FROM invites
+WHERE file_id = $1 and status = 'accepted';`;
+const queryNonBlacklisted = `
+SELECT username FROM users
+WHERE NOT EXISTS
+  (SELECT 1 FROM blacklist
+    JOIN users AS u ON users.id = blacklist.user_id
+    WHERE u.username = username);`;
+const queryBlacklisted = `
+SELECT username FROM users
+JOIN blacklist ON users.id = blacklist.user_id
+WHERE file_id = $1;`;
 
 // Updates
 const queryCancelInvite = `
 UPDATE invites
 SET status = 'cancelled'
-WHERE to_user = $1 AND from_user = $2 AND file_id = $3;
-`
+WHERE to_user = $1 AND from_user = $2 AND file_id = $3;`;
+const queryUpdatePublicity = `
+UPDATE files
+SET publicity = $1
+WHERE id = $2;`;
+const queryRemoveUser = `
+UPDATE invites
+SET status = 'removed'
+WHERE to_user = $1 AND file_id = $2 AND status = 'accepted';`;
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -156,6 +190,19 @@ module.exports = {
   getFileInfo: (params) => {
     return getInfo(queryFileInfo, params);
   },
+  getFilePublicity: async (params) => {
+    var rows = await getInfo(queryFilePublicity, params);
+    return rows[0].publicity;
+  },
+  getAcceptedInvites: (params) => {
+    return getInfo(queryAcceptedInvites, params);
+  },
+  getNonBlacklistedUsers: (params) => {
+    return getInfo(queryNonBlacklisted, params);
+  },
+  getBlacklistedUsers: (params) => {
+    return getInfo(queryBlacklisted, params);
+  },
   getInvitedUsers: (params) => {
     return getInfo(queryInvitedUsers, params);
   },
@@ -164,5 +211,11 @@ module.exports = {
   },
   cancelInvite: (params) => {
     return client.query(queryCancelInvite, params);
+  },
+  updatePublicity: (params) => {
+    return client.query(queryUpdatePublicity, params);
+  },
+  removeUserFromFile: (params) => {
+    return client.query(queryRemoveUser, params);
   }
 }

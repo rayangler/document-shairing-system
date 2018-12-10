@@ -8,26 +8,39 @@ const db = require('./db');
 module.exports = router;
 
 router.get('/', async (req, res) => {
-  res.redirect(req.baseUrl + '/users');
+  res.redirect(req.baseUrl + '/permissions');
 });
 
-router.get('/users', async (req, res) => {
-  const file_id = req.file_id;
+router.get('/permissions', async (req, res) => {
   var data = {};
-  data.users = true;
-  data.file_id = file_id;
+  data.permissions = true;
+  data.file_id = req.file_id;
+  data.base_url = req.baseUrl;
+  data.publicity = await db.getFilePublicity([req.file_id]);
+  data.active_collaborators = await db.getAcceptedInvites([req.file_id]);
+  // data.non_blacklisted_users = await db.getNonBlacklistedUsers([req.file_id]);
+  // data.blacklisted_users = await db.getBlacklistedUsers([req.file_id]);
   console.log({data});
   console.log(req.baseUrl);
   res.render('manage_file', {data});
 });
 
+router.post('/change_publicity', (req, res) => {
+  db.updatePublicity([req.body.publicity, req.file_id]);
+  res.redirect('back');
+});
+
+router.post('/remove_user', (req, res) => {
+  db.removeUserFromFile([req.body.to_user, req.file_id]);
+  res.redirect('back');
+});
+
 router.get('/invites', async (req, res) => {
-  const file_id = req.file_id;
   var data = {};
-  data.invited_users = await db.getInvitedUsers([file_id]);
-  data.valid_users = await db.getValidUsersForInvite([req.app.get('username'), file_id]);
+  data.invited_users = await db.getInvitedUsers([req.file_id]);
+  data.valid_users = await db.getValidUsersForInvite([req.app.get('username'), req.file_id]);
   data.invites = true;
-  data.file_id = file_id;
+  data.file_id = req.file_id;
   console.log({data});
   console.log(req.baseUrl);
   res.render('manage_file', {data});
