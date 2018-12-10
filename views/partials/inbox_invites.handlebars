@@ -1,0 +1,32 @@
+<div id="inbox_invites_div">
+  <h3>Pending Invites</h3>
+  <hr/>
+
+  <table>
+    <tr>
+      <th>Invited By</th>
+      <th>File Name</th>
+      <th>Invited On</th>
+      <th>Actions</th>
+    </tr>
+    {{#each data.pending_invites}}
+      <tr>
+        <td>{{from_user}}</td>
+        <td>{{file_name}}</td>
+        <td>{{invited_on}}</td>
+        <td>
+          <form method="post">
+            <input type="hidden" name="from_user" value="{{from_user}}">
+            <input type="hidden" name="file_id" value="{{file_id}}">
+            {{! Insert formactions }}
+            <input type="submit" value="Accept"
+              formaction="{{../data.base_url}}/accept_invite">
+            <input type="submit" value="Decline" formaction="{{../data.base_url}}/decline_invite"
+              style="background-color: #F0F0F0; color: #000">
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </table>
+
+</div>

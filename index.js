@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, '/public'))); // Used to access css 
 // Routes
 app.use('/file', require('./file'));
 app.use('/files', require('./files'));
+app.use('/inbox', require('./inbox'));
 app.use('/profile', require('./profile'));
 
 // Landing page.

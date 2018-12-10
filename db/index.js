@@ -98,6 +98,7 @@ SELECT users.id, $1 FROM users
 WHERE username = $2;`
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
+const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
 
 // Selects
 const queryLoginUser = `
@@ -136,6 +137,10 @@ AND NOT EXISTS
 (SELECT 1 FROM blacklist
   WHERE blacklist.user_id = users.id AND file_id = $2)
 ORDER BY username ASC;`;
+const queryPendingInvites = `
+SELECT from_user, file_id, file_name, invited_on FROM invites
+JOIN files ON invites.file_id = files.id
+WHERE invites.to_user = $1;`;
 const queryInvitedUsers = `
 SELECT * FROM invites
 WHERE file_id = $1 AND status = 'pending'
@@ -232,10 +237,20 @@ module.exports = {
   getInvitedUsers: (params) => {
     return getInfo(queryInvitedUsers, params);
   },
+  getPendingInvites: (params) => {
+    return getInfo(queryPendingInvites, params);
+  },
   getValidUsersForInvite: (params) => {
     return getInfo(queryInviteValidUsers, params);
   },
   cancelInvite: (params) => {
+    return client.query(queryCancelInvite, params);
+  },
+  acceptInvite: (params) => {
+    client.query(queryCancelInvite, params); // Delete invite from invites table
+    return client.query(queryAddCollaborator, params);
+  },
+  declineInvite: (params) => {
     return client.query(queryCancelInvite, params);
   },
   updatePublicity: (params) => {
