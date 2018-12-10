@@ -1,0 +1,123 @@
+<div id="users">
+  <h3>Permissions</h3>
+  {{! TODO: Should only show when the OWNER of the file is managing the file }}
+  {{! Otherwise, show "You don't have permission to change this." }}
+  <hr/>
+  <div>
+    <div><strong>File Publicity: {{data.publicity}}</strong></div>
+    <br>
+
+    <form action="{{data.base_url}}/change_publicity" method="post" id="change_publicity">
+      <select name="publicity" form="change_publicity">
+        <option value="public">Public</option>
+        <option value="restricted">Restricted</option>
+        <option value="shared">Shared</option>
+        <option value="private">Private</option>
+      </select>
+      <input type="submit" value="Change" style="font-size: 0.8em">
+    </form>
+    <br>
+
+    <div>Publicity Options:</div>
+    <br>
+
+    <div>
+      <div>Public:</div>
+      <div>
+        All users in the system can see this document, view its version
+        history, and write complaints, including Guest Users.
+      </div>
+    </div>
+    <br>
+
+    <div>
+      <div>Restricted:</div>
+      <div>
+        Guest Users will only be able to read the document. Permissions
+        for Ordinary Users will remain the same.
+      </div>
+    </div>
+    <br>
+
+    <div>
+      <div>Shared:</div>
+      <div>
+        Only Ordinary Users will be able to view this document. Editing is
+        limited to users invited to the document.
+      </div>
+    </div>
+    <br>
+
+    <div>
+      <div>Private:</div>
+      <div>
+        Only the owner of the document can access the document.
+      </div>
+    </div>
+
+  </div>
+  <br>
+  <hr/>
+  {{! Show all other OUs who have accepted their invites }}
+  <div>
+    <div><strong>Current Collaborators</strong></div>
+    <div>Current Ordinary Users who have read/write access to the file.</div>
+    <br>
+
+    <table>
+      <tr>
+        <th>Username</th>
+        <th>Remove</th>
+      </tr>
+      {{#each data.active_collaborators}}
+        <tr>
+          <td>{{username}}</td>
+          <td>
+            <form action="{{../data.base_url}}/remove_user" method="post">
+              <input type="hidden" name="to_user" value="{{username}}">
+              <input type="submit" value="Remove" style="font-size: small">
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    </table>
+
+  </div>
+  <br>
+  <hr/>
+  {{! Show users who are have been banned/blacklisted }}
+  <div>
+    <div><strong>Banned Users</strong></div>
+
+    <form action="{{data.base_url}}/add_blacklisted_user" method="post">
+      <div>Add User to Blacklist</div>
+      <input list="blacklisted_dl" name="blacklist_user">
+      <datalist id="blacklisted_dl">
+        {{#each data.non_blacklisted_users}}
+          <option value="{{username}}"/>
+        {{/each}}
+      </datalist>
+      <input type="submit" value="Add to Blacklist" style="font-size: 0.8em">
+    </form>
+    <br>
+
+    <table>
+      <tr>
+        <th>Username</th>
+        <th>Remove</th>
+      </tr>
+      {{#each data.blacklisted_users}}
+        <tr>
+          <td>{{username}}</td>
+          <td>
+            <form action="{{../data.base_url}}/remove_blacklisted_user" method="post">
+              <input type="hidden" name="remove_blacklisted_user" value="{{username}}">
+              <input type="submit" value="Cancel" style="font-size: small">
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    </table>
+
+  </div>
+</div>

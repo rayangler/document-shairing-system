@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS files(
   user_id INTEGER REFERENCES users(id),
   file_name TEXT DEFAULT 'Untitled_File',
   current_version TEXT DEFAULT '1',
-  created_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+  created_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  publicity VARCHAR(255) DEFAULT 'public'
 );`;
 // Invites Table. A table for the invites between users to files.
 const createInvitesTable = `
@@ -52,12 +53,26 @@ CREATE TABLE IF NOT EXISTS invites(
   invited_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(255) DEFAULT 'pending'
 );`;
+<<<<<<< HEAD
 // Taboo Blacklist Table. A table for the list of taboo words in the system.
 const createTabooTable = `
 CREATE TABLE IF NOT EXISTS tabooBlacklist(
   taboo_word VARCHAR(255) NOT NULL UNIQUE,
   CHECK (taboo_word <> ''),
   submitted_by VARCHAR(255) REFERENCES users(username)
+=======
+// Collaborators Table. A table for users who have accepted their invites to edit files.
+const createCollaboratorsTable = `
+CREATE TABLE IF NOT EXISTS collaborators(
+  username VARCHAR(255) REFERENCES users(username),
+  file_id INTEGER REFERENCES files(id)
+);`
+// Blacklist Table. A table for blacklisted users for each file.
+const createUsersBlacklistTable = `
+CREATE TABLE IF NOT EXISTS users_blacklist(
+  user_id INTEGER REFERENCES users(id),
+  file_id INTEGER REFERENCES files(id)
+>>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
 );`;
 
 client.query(createUsersTable, (err, res) => {
@@ -72,21 +87,38 @@ client.query(createFilesTable, (err, res) => {
 client.query(createInvitesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+<<<<<<< HEAD
 client.query(createTabooTable, (err, res) => {
+=======
+client.query(createCollaboratorsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createUsersBlacklistTable, (err, res) => {
+>>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
   if (err) console.log(err.stack);
 });
 
-// Queries
+// Inserts
 const queryInsertUser = `INSERT INTO users(username, email)
 VALUES($1, $2) RETURNING id`;
 const queryInsertProfile = `INSERT INTO profiles(user_id, name, picture_url, bio)
 VALUES($1, $2, $3, $4)`;
 const queryCreateNewFile = `INSERT INTO files(user_id)
 VALUES ($1) RETURNING id`;
+const queryBlacklistUser = `
+INSERT INTO users_blacklist(user_id, file_id)
+SELECT users.id, $1 FROM users
+WHERE username = $2;`
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
+<<<<<<< HEAD
 const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
 VALUES($1, $2)`;
+=======
+const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
+
+// Selects
+>>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
 const queryLoginUser = `
 SELECT * FROM users
 WHERE username = $1 AND email = $2;`;
@@ -114,15 +146,63 @@ ORDER BY created_on DESC;`;
 const queryInviteValidUsers = `
 SELECT username FROM users
 WHERE username != $1 AND NOT EXISTS
-(SELECT 1 FROM invites WHERE to_user = username AND file_id = $2)
+(SELECT 1 FROM invites
+  WHERE to_user = username AND file_id = $2)
+AND NOT EXISTS
+(SELECT 1 FROM collaborators
+  WHERE collaborators.username = users.username AND file_id = $2)
+AND NOT EXISTS
+(SELECT 1 FROM users_blacklist
+  WHERE users_blacklist.user_id = users.id AND file_id = $2)
 ORDER BY username ASC;`;
+const queryPendingInvites = `
+SELECT from_user, file_id, file_name, invited_on FROM invites
+JOIN files ON invites.file_id = files.id
+WHERE invites.to_user = $1;`;
 const queryInvitedUsers = `
 SELECT * FROM invites
-WHERE file_id = $1
+WHERE file_id = $1 AND status = 'pending'
 ORDER BY to_user ASC;`;
+<<<<<<< HEAD
 const queryTabooWords = `
 SELECT * FROM tabooBlacklist
 ORDER BY taboo_word ASC;`;
+=======
+const queryFilePublicity = `
+SELECT publicity FROM files
+WHERE id = $1;`;
+const queryCollaborators = `
+SELECT username FROM collaborators
+WHERE file_id = $1;`;
+const queryNonBlacklistedUsers = `
+SELECT username FROM users
+WHERE id != $1 AND NOT EXISTS
+  (SELECT 1 FROM users_blacklist
+    JOIN users AS u ON users.id = users_blacklist.user_id
+    WHERE u.username = username AND users_blacklist.file_id = $2);`;
+const queryBlacklistedUsers = `
+SELECT username FROM users
+JOIN users_blacklist ON users.id = users_blacklist.user_id
+WHERE file_id = $1;`;
+
+// Updates
+const queryUpdatePublicity = `
+UPDATE files
+SET publicity = $1
+WHERE id = $2;`;
+
+// Deletion
+const queryRemoveCollaborator = `
+DELETE FROM collaborators
+WHERE username = $1 AND file_id = $2;`;
+const queryCancelInvite = `
+DELETE FROM invites
+WHERE to_user = $1 AND file_id = $2;`;
+const queryRemoveBlacklistedUser = `
+DELETE FROM users_blacklist
+WHERE file_id = $1 AND user_id =
+  (SELECT id FROM users WHERE username = $2);`
+>>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -147,6 +227,9 @@ module.exports = {
   insertNewFile: (params) => {
     return insertInfo(queryCreateNewFile, params, true);
   },
+  insertBlacklistedUser: (params) => {
+    return insertInfo(queryBlacklistUser, params);
+  },
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);
   },
@@ -165,13 +248,50 @@ module.exports = {
   getFileInfo: (params) => {
     return getInfo(queryFileInfo, params);
   },
+  getFilePublicity: async (params) => {
+    var rows = await getInfo(queryFilePublicity, params);
+    return rows[0].publicity;
+  },
+  getCollaborators: (params) => {
+    return getInfo(queryCollaborators, params);
+  },
+  getNonBlacklistedUsers: (params) => {
+    return getInfo(queryNonBlacklistedUsers, params);
+  },
+  getBlacklistedUsers: (params) => {
+    return getInfo(queryBlacklistedUsers, params);
+  },
   getInvitedUsers: (params) => {
     return getInfo(queryInvitedUsers, params);
+  },
+  getPendingInvites: (params) => {
+    return getInfo(queryPendingInvites, params);
   },
   getValidUsersForInvite: (params) => {
     return getInfo(queryInviteValidUsers, params);
   },
+<<<<<<< HEAD
   getTabooWords: (params) => {
     return getInfo(queryTabooWords, params);
+=======
+  cancelInvite: (params) => {
+    return client.query(queryCancelInvite, params);
+  },
+  acceptInvite: (params) => {
+    client.query(queryCancelInvite, params); // Delete invite from invites table
+    return client.query(queryAddCollaborator, params);
+  },
+  declineInvite: (params) => {
+    return client.query(queryCancelInvite, params);
+  },
+  updatePublicity: (params) => {
+    return client.query(queryUpdatePublicity, params);
+  },
+  removeCollaborator: (params) => {
+    return client.query(queryRemoveCollaborator, params);
+  },
+  removeBlacklistedUser: (params) => {
+    return client.query(queryRemoveBlacklistedUser, params);
+>>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
   }
 }

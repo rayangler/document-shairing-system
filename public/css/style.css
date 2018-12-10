@@ -91,12 +91,12 @@ input[type=submit] {
   margin-left: 1em;
 }
 
-#files_table table {
+table {
   border-collapse: collapse;
   width: 100%;
 }
 
-#files_table td, th {
+table td, th {
   border: 1px solid #dddddd;
   text-align: left;
   padding: 1em;
@@ -187,7 +187,7 @@ button {
   margin-top: 4em;
 }
 
-#manage_file_div {
+.vertical_menu {
   margin-left: 5%;
   margin-right: 5%;
 }
@@ -205,6 +205,6 @@ button {
   border-radius: 0em;
 }
 
-#manage_file_div .content {
+.vertical_menu .content {
   margin-left: 25%;
 }

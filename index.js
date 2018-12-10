@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, '/public'))); // Used to access css 
 // Routes
 app.use('/file', require('./file'));
 app.use('/files', require('./files'));
+app.use('/inbox', require('./inbox'));
 app.use('/profile', require('./profile'));
 app.use('/blacklist', require('./blacklist'));
 
@@ -79,5 +80,13 @@ app.post('/login_user', async (req, res) => {
   res.redirect('/files/' + userId);
 });
 
+<<<<<<< HEAD
+=======
+const hbs = hb.create();
+
+hbs.getPartials().then(function(partials) {
+  console.log(partials);
+});
+>>>>>>> b60429c15a5728b402be4d255b22f3052b53b067
 
 app.listen(port);

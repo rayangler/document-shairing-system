@@ -1,49 +1,21 @@
-<div id="manage_file_div">
+<div class="vertical_menu" id="manage_file_div">
   <h1>Manage File</h1>
+  {{! TODO: Include this data }}
   <h3>File: {file_name}</h3>
   <h3>Owner: {username}</h3>
   <div id="center">
     <div class="vertical_navbar">
-      <button onclick="selectNavItem(event, 'users')">Users</button>
-      <button onclick="selectNavItem(event, 'invites')">Invites</button>
+      <form method="get">
+        <button formaction="/file/{{data.file_id}}/manage/permissions">Permissions</button>
+        <button formaction="/file/{{data.file_id}}/manage/invites">Invites</button>
+      </form>
     </div>
-    <div class="display_content">
-      <div id="users" class="content" style="display:block">
-        <h3>Users</h3>
-      </div>
-      <div id="invites" class="content" style="display:none">
-        <h3>Invites</h3>
-        <hr/>
-        <div>
-          Invite New User to File
-          <form action="/file/{{data.file_id}}/manage/invite_user" method="post">
-            <input list="invite_dl" name="invite_user">
-            <datalist id="invite_dl">
-              {{#each data.valid_users}}
-                <option value="{{username}}"/>
-              {{/each}}
-            </datalist>
-            <input type="submit" value="Invite">
-          </form>
-        </div>
-        <hr/>
-        <div>
-          Pending Invites
-          {{#each data.invited_users}}
-            <div>{{to_user}}</div>
-          {{/each}}
-        </div>
-      </div>
+    <div class="content">
+      {{#if data.permissions}}
+        {{> file_permissions this}}
+      {{else if data.invites}}
+        {{> file_invites this}}
+      {{/if}}
     </div>
   </div>
 </div>
-
-<script>
-  function selectNavItem(e, contentName) {
-    var contents = document.getElementsByClassName('content');
-    for (i = 0; i < contents.length; i++) {
-      contents[i].style.display = "none";
-    }
-    document.getElementById(contentName).style.display = "block";
-  }
-</script>
