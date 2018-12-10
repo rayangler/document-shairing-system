@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, '/public'))); // Used to access css 
 // Routes
 app.use('/file', require('./file'));
 app.use('/files', require('./files'));
+app.use('/inbox', require('./inbox'));
 app.use('/profile', require('./profile'));
 
 // Landing page.
@@ -72,6 +73,12 @@ app.post('/login_user', async (req, res) => {
   console.log('Logged in. User: ' + userId);
   console.log('Username: ' + username);
   res.redirect('/files/' + userId);
+});
+
+const hbs = hb.create();
+
+hbs.getPartials().then(function(partials) {
+  console.log(partials);
 });
 
 app.listen(port);

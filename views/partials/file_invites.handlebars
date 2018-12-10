@@ -1,0 +1,41 @@
+<div id="invites">
+  <h3>Invites</h3>
+  <hr/>
+  <div>
+    Invite New User to File
+    <form action="/file/{{data.file_id}}/manage/invite_user" method="post">
+      <input list="invite_dl" name="invite_user">
+      <datalist id="invite_dl">
+        {{#each data.valid_users}}
+          <option value="{{username}}"/>
+        {{/each}}
+      </datalist>
+      <input type="submit" value="Invite">
+    </form>
+  </div>
+  <hr/>
+  <table>
+    <div>Pending Invites</div>
+    <br>
+    <tr>
+      <th>User</th>
+      <th>Invited By</th>
+      <th>Invited On</th>
+      <th>Cancel Invite</th>
+    </tr>
+    {{#each data.invited_users}}
+      <tr>
+        <td>{{to_user}}</td>
+        <td>{{from_user}}</td>
+        <td>{{invited_on}}</td>
+        <td>
+          <form action="/file/{{../data.file_id}}/manage/cancel_invite" method="post">
+            <input type="hidden" name="to_user" value="{{to_user}}">
+            <input type="hidden" name="from_user" value="{{from_user}}">
+            <input type="submit" value="Cancel">
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </table>
+</div>

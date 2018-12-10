@@ -1,0 +1,17 @@
+<div class="vertical_menu" id="inbox_div">
+  <h1>Inbox</h1>
+  <div id="center">
+    <div class="vertical_navbar">
+      <form method="get">
+        <button formaction="{{data.base_url}}/invites">Invites</button>
+      </form>
+    </div>
+    <div class="content">
+      {{#if data.invites}}
+        {{> inbox_invites this}}
+      {{else if data.invites}}
+        {{> file_invites this}}
+      {{/if}}
+    </div>
+  </div>
+</div>
