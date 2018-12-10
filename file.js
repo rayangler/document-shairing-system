@@ -16,6 +16,7 @@ router.get('/:file_id', async (req, res) => {
   data.file_id = file_id;
   console.log(data);
   res.render('file', data);
-})
+});
+
 
 router.use('/:file_id/manage', require('./manage'));

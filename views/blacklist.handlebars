@@ -1,0 +1,24 @@
+<div id="blacklist_table">
+  <div id="heading">
+    <h1>Taboo Word Blacklist</h1>
+  </div>
+  <div id="submit_taboo">
+    <form action="/blacklist" method="post">
+      <input type="text" name="submit_word">
+      <input type="submit" value="Submit">
+    </form>
+    <br/>
+  </div>
+  <table>
+    <tr>
+      <th>Taboo Word</th>
+      <th>Submitted by</th>
+    </tr>
+    {{#each data.rows}}
+      <tr>
+        <td>{{taboo_word}}</td>
+        <td>{{submitted_by}}</td>
+      </tr>
+    {{/each}}
+  </table>
+</div>

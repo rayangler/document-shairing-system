@@ -52,6 +52,13 @@ CREATE TABLE IF NOT EXISTS invites(
   invited_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(255) DEFAULT 'pending'
 );`;
+// Taboo Blacklist Table. A table for the list of taboo words in the system.
+const createTabooTable = `
+CREATE TABLE IF NOT EXISTS tabooBlacklist(
+  taboo_word VARCHAR(255) NOT NULL UNIQUE,
+  CHECK (taboo_word <> ''),
+  submitted_by VARCHAR(255) REFERENCES users(username)
+);`;
 
 client.query(createUsersTable, (err, res) => {
   if (err) console.log(err.stack);
@@ -65,6 +72,9 @@ client.query(createFilesTable, (err, res) => {
 client.query(createInvitesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+client.query(createTabooTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
 
 // Queries
 const queryInsertUser = `INSERT INTO users(username, email)
@@ -75,7 +85,8 @@ const queryCreateNewFile = `INSERT INTO files(user_id)
 VALUES ($1) RETURNING id`;
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
-
+const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
+VALUES($1, $2)`;
 const queryLoginUser = `
 SELECT * FROM users
 WHERE username = $1 AND email = $2;`;
@@ -109,6 +120,9 @@ const queryInvitedUsers = `
 SELECT * FROM invites
 WHERE file_id = $1
 ORDER BY to_user ASC;`;
+const queryTabooWords = `
+SELECT * FROM tabooBlacklist
+ORDER BY taboo_word ASC;`;
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -136,6 +150,9 @@ module.exports = {
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);
   },
+  insertTabooWord: (params) => {
+    return insertInfo(querySubmitTabooWord, params);
+  },
   getLoginInfo: (params) => {
     return getInfo(queryLoginUser, params);
   },
@@ -153,5 +170,8 @@ module.exports = {
   },
   getValidUsersForInvite: (params) => {
     return getInfo(queryInviteValidUsers, params);
+  },
+  getTabooWords: (params) => {
+    return getInfo(queryTabooWords, params);
   }
 }
