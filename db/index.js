@@ -82,6 +82,10 @@ const queryInsertProfile = `INSERT INTO profiles(user_id, name, picture_url, bio
 VALUES($1, $2, $3, $4)`;
 const queryCreateNewFile = `INSERT INTO files(user_id)
 VALUES ($1) RETURNING id`;
+const queryBlacklistUser = `
+INSERT INTO blacklist(user_id, file_id)
+SELECT users.id, $1 FROM users
+WHERE username = $2;`
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
 
@@ -129,10 +133,10 @@ SELECT to_user FROM invites
 WHERE file_id = $1 and status = 'accepted';`;
 const queryNonBlacklisted = `
 SELECT username FROM users
-WHERE NOT EXISTS
+WHERE id != $1 AND NOT EXISTS
   (SELECT 1 FROM blacklist
     JOIN users AS u ON users.id = blacklist.user_id
-    WHERE u.username = username);`;
+    WHERE u.username = username AND blacklist.file_id = $2);`;
 const queryBlacklisted = `
 SELECT username FROM users
 JOIN blacklist ON users.id = blacklist.user_id
@@ -151,6 +155,12 @@ const queryRemoveUser = `
 UPDATE invites
 SET status = 'removed'
 WHERE to_user = $1 AND file_id = $2 AND status = 'accepted';`;
+
+// Deletion
+const queryRemoveBlacklisted = `
+DELETE FROM blacklist
+WHERE file_id = $1 AND user_id =
+  (SELECT id FROM users WHERE username = $2);`
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -174,6 +184,9 @@ module.exports = {
   },
   insertNewFile: (params) => {
     return insertInfo(queryCreateNewFile, params, true);
+  },
+  insertBlacklistedUser: (params) => {
+    return insertInfo(queryBlacklistUser, params);
   },
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);
@@ -217,5 +230,8 @@ module.exports = {
   },
   removeUserFromFile: (params) => {
     return client.query(queryRemoveUser, params);
+  },
+  removeBlacklistedUser: (params) => {
+    return client.query(queryRemoveBlacklisted, params);
   }
 }

@@ -6,7 +6,7 @@
   <div>
     <div><strong>File Publicity: {{data.publicity}}</strong></div>
     <br>
-    
+
     <form action="{{data.base_url}}/change_publicity" method="post" id="change_publicity">
       <select name="publicity" form="change_publicity">
         <option value="public">Public</option>
@@ -91,10 +91,10 @@
 
     <form action="{{data.base_url}}/add_blacklisted_user" method="post">
       <div>Add User to Blacklist</div>
-      <input list="blacklisted_dl" name="blaclist_user">
+      <input list="blacklisted_dl" name="blacklist_user">
       <datalist id="blacklisted_dl">
         {{#each data.non_blacklisted_users}}
-          <option value="{{user_id}}"/>
+          <option value="{{username}}"/>
         {{/each}}
       </datalist>
       <input type="submit" value="Add to Blacklist" style="font-size: 0.8em">
@@ -108,11 +108,11 @@
       </tr>
       {{#each data.blacklisted_users}}
         <tr>
-          <td>{{user_id}}</td>
+          <td>{{username}}</td>
           <td>
             <form action="{{../data.base_url}}/remove_blacklisted_user" method="post">
-              <input type="hidden" name="to_user" value="{{user_id}}">
-              <input type="submit" value="Cancel">
+              <input type="hidden" name="remove_blacklisted_user" value="{{username}}">
+              <input type="submit" value="Cancel" style="font-size: small">
             </form>
           </td>
         </tr>
