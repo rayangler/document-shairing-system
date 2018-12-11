@@ -56,8 +56,7 @@ CREATE TABLE IF NOT EXISTS invites(
 // Membership Applications Table. A table for pending applications from guest users.
 const createApplicationsTable = `
 CREATE TABLE IF NOT EXISTS membershipApplications(
-  user_id INTEGER REFERENCES users(id),
-  username VARCHAR(255),
+  username VARCHAR(255) REFERENCES users(username) UNIQUE,
   picture_url TEXT DEFAULT 'https://t3.ftcdn.net/jpg/00/64/67/52/240_F_64675209_7ve2XQANuzuHjMZXP3aIYIpsDKEbF5dD.jpg',
   technical_interests TEXT,
   status VARCHAR(255) DEFAULT 'pending'
@@ -119,14 +118,14 @@ VALUES ($1) RETURNING id`;
 const queryBlacklistUser = `
 INSERT INTO users_blacklist(user_id, file_id)
 SELECT users.id, $1 FROM users
-WHERE username = $2;`
+WHERE username = $2`;
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
 const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
 VALUES($1, $2)`;
 const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
-const querySubmitApplication = `INSERT INTO membershipApplications(user_id, username, picture_url, technical_interests)
-VALUES($1, $2, $3, $4)`;
+const querySubmitApplication = `INSERT INTO membershipApplications(username, picture_url, technical_interests)
+VALUES($1, $2, $3)`;
 
 // Selects
 const queryLoginUser = `
@@ -193,13 +192,20 @@ SELECT username FROM users
 JOIN users_blacklist ON users.id = users_blacklist.user_id
 WHERE file_id = $1;`;
 const queryPendingApplications = `
-SELECT user_id, username, picture_url, technical_interests FROM membershipApplications;`;
+SELECT username, picture_url, technical_interests FROM membershipApplications;`;
+const queryUserType = `
+SELECT user_type from users
+WHERE username = $1;`;
 
 // Updates
 const queryUpdatePublicity = `
 UPDATE files
 SET publicity = $1
 WHERE id = $2;`;
+const queryUpdateMembership = `
+UPDATE users
+SET user_type = 'ordinary'
+WHERE username = $1;`;
 
 // Deletion
 const queryRemoveCollaborator = `
@@ -212,10 +218,12 @@ const queryRemoveBlacklistedUser = `
 DELETE FROM users_blacklist
 WHERE file_id = $1 AND user_id =
 (SELECT id FROM users WHERE username = $2);`;
-const queryDeclineApplication = `
+const queryDeleteApplication = `
 DELETE FROM membershipApplications
-WHERE user_id = $1;`;
-
+WHERE username = $1;`;
+const queryRemoveTabooWord = `
+DELETE FROM tabooBlacklist
+WHERE taboo_word = $1;`;
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -290,7 +298,11 @@ module.exports = {
     return getInfo(queryTabooWords, params);
   },
   getPendingApplications: (params) => {
-    return getInfo(queryPendingApplications);
+    return getInfo(queryPendingApplications, params);
+  },
+  getUserType: async (params) => {
+    var rows = await getInfo(queryUserType, params);
+    return rows[0].user_type;
   },
   cancelInvite: (params) => {
     return client.query(queryCancelInvite, params);
@@ -299,8 +311,15 @@ module.exports = {
     client.query(queryCancelInvite, params); // Delete invite from invites table
     return client.query(queryAddCollaborator, params);
   },
+  acceptApplication: (params) => {
+    client.query(queryDeleteApplication, params);
+    return client.query(queryUpdateMembership, params);
+  },
   declineInvite: (params) => {
     return client.query(queryCancelInvite, params);
+  },
+  declineApplication: (params) => {
+    return client.query(queryDeleteApplication, params);
   },
   updatePublicity: (params) => {
     return client.query(queryUpdatePublicity, params);
@@ -310,5 +329,8 @@ module.exports = {
   },
   removeBlacklistedUser: (params) => {
     return client.query(queryRemoveBlacklistedUser, params);
+  },
+  removeTabooWord: (params) => {
+    return client.query(queryRemoveTabooWord, params);
   }
 }

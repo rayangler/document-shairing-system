@@ -44,11 +44,12 @@ router.post('/decline_invite', (req, res) => {
 });
 
 router.post('/accept_application', (req, res) => {
-  db.acceptInvite([req.app.get('username'), req.body.file_id]);
+  db.acceptApplication([req.app.get('username')]);
+  console.log(req.app.get('user_type'));
   res.redirect('back');
 });
 
 router.post('/decline_application', (req, res) => {
-  db.declineInvite([req.app.get('username'), req.body.file_id]);
+  db.declineApplication([req.app.get('username')]);
   res.redirect('back');
 });

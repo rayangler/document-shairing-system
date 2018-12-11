@@ -25,7 +25,13 @@ router.get('/submit_application', (req, res) => {
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
   var rows = await db.getProfilePage([id]);
-  res.render('profile', rows[0]);
+  var userType = await db.getUserType([req.app.get('username')]);
+  var data = {}
+  data.rows = rows[0]
+  if (userType == 'guest') {
+    data.isGuestUser = true;
+  };
+  res.render('profile', {data});
 });
 
 router.post('/submit_application', (req, res) => {
@@ -33,7 +39,7 @@ router.post('/submit_application', (req, res) => {
   const username = req.body.username;
   const pictureUrl = req.body.picture_url;
   const technicalInterests = req.body.technical_interests;
-  db.insertNewApplication([userId, username, pictureUrl, technicalInterests]);
+  db.insertNewApplication([username, pictureUrl, technicalInterests]);
   console.log('Application submitted for: ' + username);
   res.redirect(req.baseUrl + '/'+ req.app.get('userId'));
 })

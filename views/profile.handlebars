@@ -1,16 +1,18 @@
 <div id="heading">
-  <h1>{{name}}'s Profile Page</h1>
+  <h1>{{data.rows.name}}'s Profile Page</h1>
+    {{#if data.isGuestUser}}
   <form action="submit_application" method="get">
     <input type="submit" value="Apply for Ordinary User">
   </form>
+  {{/if}}
 </div>
 
 <div id="profile">
   <div id="sidebar">
-    <img src="{{picture_url}}" height="240" width="240"/>
-    <div>{{username}}</div>
-    <div>{{email}}</div>
-    <div>{{bio}}</div>
+    <img src="{{data.rows.picture_url}}" height="240" width="240"/>
+    <div>{{data.rows.username}}</div>
+    <div>{{data.rows.email}}</div>
+    <div>{{data.rows.bio}}</div>
   </div>
 
   <div id="main_info">

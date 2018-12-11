@@ -74,7 +74,7 @@ app.post('/login_user', async (req, res) => {
   const email = req.body.email1;
   var rows = await db.getLoginInfo([username, email]);
   var userId = rows[0].id;
-  var userType = rows[0].user_type;
+  var userType = await db.getUserType([username]);
   app.set('userId', userId);
   app.set('username', username);
   app.set('userType', userType);
