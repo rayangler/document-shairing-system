@@ -53,6 +53,15 @@ CREATE TABLE IF NOT EXISTS invites(
   invited_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(255) DEFAULT 'pending'
 );`;
+// Membership Applications Table. A table for pending applications from guest users.
+const createApplicationsTable = `
+CREATE TABLE IF NOT EXISTS membershipApplications(
+  user_id INTEGER REFERENCES users(id),
+  username VARCHAR(255),
+  picture_url TEXT DEFAULT 'https://t3.ftcdn.net/jpg/00/64/67/52/240_F_64675209_7ve2XQANuzuHjMZXP3aIYIpsDKEbF5dD.jpg',
+  technical_interests TEXT,
+  status VARCHAR(255) DEFAULT 'pending'
+);`;
 
 // Taboo Blacklist Table. A table for the list of taboo words in the system.
 const createTabooTable = `
@@ -60,13 +69,14 @@ CREATE TABLE IF NOT EXISTS tabooBlacklist(
   taboo_word VARCHAR(255) NOT NULL UNIQUE,
   CHECK (taboo_word <> ''),
   submitted_by VARCHAR(255) REFERENCES users(username)
-);`
+);`;
+
 // Collaborators Table. A table for users who have accepted their invites to edit files.
 const createCollaboratorsTable = `
 CREATE TABLE IF NOT EXISTS collaborators(
   username VARCHAR(255) REFERENCES users(username),
   file_id INTEGER REFERENCES files(id)
-);`
+);`;
 // Blacklist Table. A table for blacklisted users for each file.
 const createUsersBlacklistTable = `
 CREATE TABLE IF NOT EXISTS users_blacklist(
@@ -84,6 +94,9 @@ client.query(createFilesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 client.query(createInvitesTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createApplicationsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 client.query(createTabooTable, (err, res) => {
@@ -112,6 +125,8 @@ VALUES($1, $2, $3)`;
 const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
 VALUES($1, $2)`;
 const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
+const querySubmitApplication = `INSERT INTO membershipApplications(user_id, username, picture_url, technical_interests)
+VALUES($1, $2, $3, $4)`;
 
 // Selects
 const queryLoginUser = `
@@ -177,6 +192,8 @@ const queryBlacklistedUsers = `
 SELECT username FROM users
 JOIN users_blacklist ON users.id = users_blacklist.user_id
 WHERE file_id = $1;`;
+const queryPendingApplications = `
+SELECT user_id, username, picture_url, technical_interests FROM membershipApplications;`;
 
 // Updates
 const queryUpdatePublicity = `
@@ -194,7 +211,10 @@ WHERE to_user = $1 AND file_id = $2;`;
 const queryRemoveBlacklistedUser = `
 DELETE FROM users_blacklist
 WHERE file_id = $1 AND user_id =
-  (SELECT id FROM users WHERE username = $2);`
+(SELECT id FROM users WHERE username = $2);`;
+const queryDeclineApplication = `
+DELETE FROM membershipApplications
+WHERE user_id = $1;`;
 
 
 async function getInfo(query, params) {
@@ -228,6 +248,9 @@ module.exports = {
   },
   insertTabooWord: (params) => {
     return insertInfo(querySubmitTabooWord, params);
+  },
+  insertNewApplication: (params) => {
+    return insertInfo(querySubmitApplication, params);
   },
   getLoginInfo: (params) => {
     return getInfo(queryLoginUser, params);
@@ -265,6 +288,9 @@ module.exports = {
   },
   getTabooWords: (params) => {
     return getInfo(queryTabooWords, params);
+  },
+  getPendingApplications: (params) => {
+    return getInfo(queryPendingApplications);
   },
   cancelInvite: (params) => {
     return client.query(queryCancelInvite, params);

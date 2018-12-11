@@ -15,9 +15,25 @@ router.get('/', (req, res) => {
   res.redirect(req.baseUrl + '/'+ req.app.get('userId'));
 });
 
+// Profile creation page for new users.
+router.get('/submit_application', (req, res) => {
+  var username = req.app.get('username')
+  res.render('application', {username});
+});
+
 // Profile page for user with id in params.
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
   var rows = await db.getProfilePage([id]);
   res.render('profile', rows[0]);
 });
+
+router.post('/submit_application', (req, res) => {
+  const userId = req.app.get('userId');
+  const username = req.body.username;
+  const pictureUrl = req.body.picture_url;
+  const technicalInterests = req.body.technical_interests;
+  db.insertNewApplication([userId, username, pictureUrl, technicalInterests]);
+  console.log('Application submitted for: ' + username);
+  res.redirect(req.baseUrl + '/'+ req.app.get('userId'));
+})
