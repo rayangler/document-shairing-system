@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
   res.render('blacklist', {data});
 });
 
-router.post('/', (req, res) => {
+router.post('/submit', (req, res) => {
   const tabooWord = req.body.submit_word;
   const submittedBy = req.app.get('username');
   console.log('New taboo word submitted: ' + tabooWord);
@@ -22,3 +22,10 @@ router.post('/', (req, res) => {
   db.insertTabooWord([tabooWord, submittedBy]);
   res.redirect('back');
 });
+
+router.post('/delete_taboo', (req,res) => {
+  const tabooWord = req.body.taboo_word;
+  console.log('Taboo word deleted: ' + tabooWord);
+  db.removeTabooWord([tabooWord]);
+  res.redirect('back');
+})

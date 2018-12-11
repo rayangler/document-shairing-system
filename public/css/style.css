@@ -34,6 +34,7 @@ input[type=submit] {
   padding: 0.5em;
 }
 
+
 #nav {
   list-style-type: none;
   margin: 0;
@@ -55,13 +56,18 @@ input[type=submit] {
   text-decoration: none;
 }
 
-#create_profile_div {
+#nav #rightNav {
+  float: right;
+}
+
+
+.submission_form_div {
   display: flex;
   justify-content: center;
   margin-top: 8em;
 }
 
-#create_profile {
+.submission_form {
   display: flex;
   flex-flow: column;
   align-items: center;
@@ -76,7 +82,7 @@ input[type=submit] {
   color: #5DA2D5;
 }
 
-#create_profile div {
+.submission_form div {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
@@ -84,7 +90,6 @@ input[type=submit] {
 #profile {
   display: flex;
   flex-flow: row;
-  margin-top: 1em;
 }
 
 #profile #main_info {
@@ -111,10 +116,15 @@ table td, th {
   width: 100%;
 }
 
-#blacklist_table td, th {
+#blacklist_table th, td {
   border: 1px solid #dddddd;
   text-align: left;
   padding: 1em;
+}
+
+#blacklist_table th.delete, td.delete {
+  width: 10%;
+  text-align: center;
 }
 
 #blacklist_table tr:nth-child(even) {
@@ -207,4 +217,12 @@ table td, th {
 
 .vertical_menu .content {
   margin-left: 25%;
+}
+
+input[type=textarea] {
+  width: 300px;
+  box-sizing: border-box;
+  border: 1px solid #999;
+  vertical-align: top;
+  height: 5em;
 }
