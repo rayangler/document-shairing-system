@@ -24,3 +24,20 @@ router.use('/:file_id/manage', (req, res, next) => {
   req.file_id = req.params.file_id;
   next();
 }, require('./manage'));
+
+router.get('/:file_id/complaint', (req, res) => {
+  var data = {};
+  data.file_id = req.params.file_id;
+  res.render('new_complaint', data);
+});
+
+router.post('/:file_id/complaint', (req, res) => {
+  db.submitNewComplaint([
+    req.app.get('userId'),
+    req.params.file_id,
+    req.body.recipient,
+    req.body.complaint_subject,
+    req.body.complaint_text
+  ]);
+  res.redirect('back');
+});

@@ -67,12 +67,22 @@ CREATE TABLE IF NOT EXISTS collaborators(
   username VARCHAR(255) REFERENCES users(username),
   file_id INTEGER REFERENCES files(id)
 );`
-// Blacklist Table. A table for blacklisted users for each file.
+// Blacklist Users Table. A table for blacklisted users for each file.
 const createUsersBlacklistTable = `
 CREATE TABLE IF NOT EXISTS users_blacklist(
   user_id INTEGER REFERENCES users(id),
   file_id INTEGER REFERENCES files(id)
 );`;
+// Complaints Table. A table for complaints, sent to document owners or SUs.
+const createComplaintsTable = `
+CREATE TABLE IF NOT EXISTS complaints(
+  complainer_id INTEGER REFERENCES users(id),
+  file_id INTEGER REFERENCES files(id),
+  recipient VARCHAR(255),
+  subject TEXT,
+  complaint_text TEXT,
+  timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);`
 
 client.query(createUsersTable, (err, res) => {
   if (err) console.log(err.stack);
@@ -95,6 +105,9 @@ client.query(createCollaboratorsTable, (err, res) => {
 client.query(createUsersBlacklistTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+client.query(createComplaintsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
 
 // Inserts
 const queryInsertUser = `INSERT INTO users(username, email)
@@ -112,6 +125,9 @@ VALUES($1, $2, $3)`;
 const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
 VALUES($1, $2)`;
 const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
+const queryInsertComplaint = `
+INSERT INTO complaints(complainer_id, file_id, recipient, subject, complaint_text)
+VALUES ($1, $2, $3, $4, $5)`;
 
 // Selects
 const queryLoginUser = `
@@ -284,5 +300,8 @@ module.exports = {
   },
   removeBlacklistedUser: (params) => {
     return client.query(queryRemoveBlacklistedUser, params);
+  },
+  submitNewComplaint: (params) => {
+    return insertInfo(queryInsertComplaint, params);
   }
 }
