@@ -35,9 +35,14 @@ router.post('/:file_id/lock', (req, res) => {
 
 router.post('/:file_id/unlock', async (req, res) => {
   var rows = await db.getFileInfo([req.params.file_id]);
+  var isFileOwner = await db.checkIsFileOwner([req.app.get('userId'), req.params.file_id]);
+
   if(req.app.get('userId') == rows[0].editor_id){
     db.removeEditor([req.app.get('userId'), req.params.file_id]);
+  } else if (isFileOwner) {
+    db.removeEditorForced([req.params.file_id]);
   }
+
   res.redirect('back');
 });
 
