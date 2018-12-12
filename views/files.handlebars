@@ -1,9 +1,11 @@
 <div id="files_table">
   <div id="heading">
     <h1>{{data.username}}'s Files</h1>
-    <form action="/create_new_file" method="post">
-      <input type="submit" value="+ Create New File">
-    </form>
+    {{#if data.canCreateNewFile}}
+      <form action="/create_new_file" method="post">
+        <input type="submit" value="+ Create New File">
+      </form>
+    {{/if}}
   </div>
   <div id="file_search">
     <form action="/files/{{data.user_id}}/search" method="post">

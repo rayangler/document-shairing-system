@@ -31,6 +31,14 @@ router.get('/:user_id', async (req, res) => {
   data.rows = rows;
   data.username = await db.getUsername([user_id]);
   data.user_id = user_id;
+
+  var userType = await db.getUserType([req.app.get('username')]);
+  if (userType == 'guest') {
+    data.canCreateNewFile = false;
+  } else {
+    data.canCreateNewFile = true;
+  }
+
   console.log(data);
   res.render('files', {data});
 });
