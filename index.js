@@ -20,6 +20,7 @@ app.use('/file', require('./file'));
 app.use('/files', require('./files'));
 app.use('/inbox', require('./inbox'));
 app.use('/profile', require('./profile'));
+app.use('/blacklist', require('./blacklist'));
 
 // Landing page.
 app.get('/', (req, res) => {
@@ -29,6 +30,11 @@ app.get('/', (req, res) => {
 // Profile creation page for new users.
 app.get('/create_profile', (req, res) => {
   res.render('create_profile');
+});
+
+// Creates blacklist page for taboo words
+app.get('/blacklist', (req, res) => {
+  res.render('blacklist');
 });
 
 // Creates new file with default values and inserts it to database.
@@ -68,10 +74,13 @@ app.post('/login_user', async (req, res) => {
   const email = req.body.email1;
   var rows = await db.getLoginInfo([username, email]);
   var userId = rows[0].id;
+  var userType = await db.getUserType([username]);
   app.set('userId', userId);
   app.set('username', username);
+  app.set('userType', userType);
   console.log('Logged in. User: ' + userId);
   console.log('Username: ' + username);
+  console.log('User type: ' + userType);
   res.redirect('/files/' + userId);
 });
 

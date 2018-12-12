@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS files(
   user_id INTEGER REFERENCES users(id),
   file_name TEXT DEFAULT 'Untitled_File',
   file_text TEXT DEFAULT '',
-  current_version INTEGER DEFAULT 1,
+  current_version INTEGER DEFAULT 0,
   created_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   editor_id INTEGER REFERENCES users(id) DEFAULT NULL,
   publicity VARCHAR(255) DEFAULT 'public'
@@ -63,18 +63,57 @@ CREATE TABLE IF NOT EXISTS invites(
   invited_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(255) DEFAULT 'pending'
 );`;
+// Membership Applications Table. A table for pending applications from guest users.
+const createApplicationsTable = `
+CREATE TABLE IF NOT EXISTS membershipApplications(
+  username VARCHAR(255) REFERENCES users(username) UNIQUE,
+  picture_url TEXT DEFAULT 'https://t3.ftcdn.net/jpg/00/64/67/52/240_F_64675209_7ve2XQANuzuHjMZXP3aIYIpsDKEbF5dD.jpg',
+  technical_interests TEXT,
+  status VARCHAR(255) DEFAULT 'pending'
+);`;
+
+// Taboo Blacklist Table. A table for the list of taboo words in the system.
+const createTabooTable = `
+CREATE TABLE IF NOT EXISTS tabooBlacklist(
+  taboo_word VARCHAR(255) NOT NULL UNIQUE,
+  CHECK (taboo_word <> ''),
+  submitted_by VARCHAR(255) REFERENCES users(username)
+);`;
+
 // Collaborators Table. A table for users who have accepted their invites to edit files.
 const createCollaboratorsTable = `
 CREATE TABLE IF NOT EXISTS collaborators(
   username VARCHAR(255) REFERENCES users(username),
   file_id INTEGER REFERENCES files(id)
 );`
-// Blacklist Table. A table for blacklisted users for each file.
+// Blacklist Users Table. A table for blacklisted users for each file.
 const createUsersBlacklistTable = `
 CREATE TABLE IF NOT EXISTS users_blacklist(
   user_id INTEGER REFERENCES users(id),
   file_id INTEGER REFERENCES files(id)
 );`;
+// Complaints Table. A table for complaints, sent to document owners or SUs.
+const createComplaintsTable = `
+CREATE TABLE IF NOT EXISTS complaints(
+  complainer_id INTEGER REFERENCES users(id),
+  file_id INTEGER REFERENCES files(id),
+  recipient VARCHAR(255),
+  subject TEXT,
+  complaint_text TEXT,
+  timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);`
+// Interests Table. A table for interests built into the system.
+const createInterestsTable = `
+CREATE TABLE IF NOT EXISTS interests(
+  interest_id SERIAL PRIMARY KEY,
+  interest_name VARCHAR(255) UNIQUE
+);`
+// User Interests Table. A table keeping track of all users' interests.
+const createUserInterestsTable = `
+CREATE TABLE IF NOT EXISTS user_interests(
+  user_id INTEGER REFERENCES users(id),
+  interest_id INTEGER REFERENCES interests(interest_id)
+);`
 
 client.query(createUsersTable, (err, res) => {
   if (err) console.log(err.stack);
@@ -91,10 +130,25 @@ client.query(createHistoryFilesTable, (err, res) => {
 client.query(createInvitesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+client.query(createApplicationsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createTabooTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
 client.query(createCollaboratorsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 client.query(createUsersBlacklistTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createComplaintsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createInterestsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createUserInterestsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
 
@@ -108,12 +162,52 @@ VALUES ($1) RETURNING id`;
 const queryBlacklistUser = `
 INSERT INTO users_blacklist(user_id, file_id)
 SELECT users.id, $1 FROM users
-WHERE username = $2;`
+WHERE username = $2`;
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
+const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
+VALUES($1, $2)`;
 const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
 const queryAddHistoryFile = `INSERT INTO history_files(id, version, history_text)
 VALUES($1, $2, $3)`;
+const queryInsertComplaint = `
+INSERT INTO complaints(complainer_id, file_id, recipient, subject, complaint_text)
+VALUES ($1, $2, $3, $4, $5)`;
+const querySubmitApplication = `INSERT INTO membershipApplications(username, picture_url, technical_interests)
+VALUES($1, $2, $3)`;
+// Interests directly added to the Interests Table.
+const queryInsertInterest = `
+INSERT INTO interests(interest_name)
+VALUES ($1)
+ON CONFLICT (interest_name)
+DO NOTHING;`
+const queryInsertUserInterest = `
+INSERT INTO user_interests(user_id, interest_id)
+SELECT $1, interest_id FROM interests
+WHERE interests.interest_name = $2;`;
+
+// Inserts 15 chosen interests:
+function insertInterests() {
+  const interests = [
+    'Algorithms',
+    'Big Data',
+    'Data Mining',
+    'Databases',
+    'Statistical Analysis',
+    'Coding',
+    'Debugging',
+    'Network Security',
+    'Operating Systems',
+    'Testing',
+    'Blogging',
+    'Web Analytics'
+  ]
+  var length = interests.length;
+  for (var i = 0; i < length; i++) {
+    client.query(queryInsertInterest, [interests[i]]);
+  }
+}
+insertInterests();
 
 // Selects
 const queryLoginUser = `
@@ -164,6 +258,9 @@ const queryInvitedUsers = `
 SELECT * FROM invites
 WHERE file_id = $1 AND status = 'pending'
 ORDER BY to_user ASC;`;
+const queryTabooWords = `
+SELECT * FROM tabooBlacklist
+ORDER BY taboo_word ASC;`;
 const queryFilePublicity = `
 SELECT publicity FROM files
 WHERE id = $1;`;
@@ -180,6 +277,35 @@ const queryBlacklistedUsers = `
 SELECT username FROM users
 JOIN users_blacklist ON users.id = users_blacklist.user_id
 WHERE file_id = $1;`;
+const queryOwnerComplaints = `
+SELECT subject, users.username AS complainer, file_name, complaints.timestamp,
+  complaint_text, complaints.file_id, complaints.complainer_id FROM complaints
+JOIN files ON files.id = complaints.file_id
+JOIN users ON complainer_id = users.id
+WHERE files.user_id = $1 AND recipient != 'superusers'
+ORDER BY complaints.timestamp DESC;`;
+const querySUComplaints = `
+SELECT subject, users.username AS complainer, file_name, complaints.timestamp,
+  complaint_text, complaints.file_id, complaints.complainer_id FROM complaints
+JOIN files ON files.id = complaints.file_id
+JOIN users ON complainer_id = users.id
+WHERE files.user_id = $1 AND recipient = 'superusers'
+ORDER BY complaints.timestamp DESC;`;
+const queryPendingApplications = `
+SELECT username, picture_url, technical_interests FROM membershipApplications;`;
+const queryUserType = `
+SELECT user_type from users
+WHERE username = $1;`;
+const queryInterestsToChoose = `
+SELECT * FROM interests
+WHERE NOT EXISTS
+(SELECT 1 FROM user_interests
+  WHERE user_id = $1 AND user_interests.interest_id = interests.interest_id);`;
+// Gets user interests for a single user
+const querySpecificUsersInterests = `
+SELECT interest_name, interest_id FROM interests
+NATURAL JOIN user_interests
+WHERE user_id = $1;`
 
 // Updates
 const queryUpdatePublicity = `
@@ -199,6 +325,10 @@ UPDATE files
 SET file_text = $1,
     current_version = current_version + 1
 WHERE id = $2;`;
+const queryUpdateMembership = `
+UPDATE users
+SET user_type = 'ordinary'
+WHERE username = $1;`;
 
 // Deletion
 const queryRemoveCollaborator = `
@@ -210,7 +340,19 @@ WHERE to_user = $1 AND file_id = $2;`;
 const queryRemoveBlacklistedUser = `
 DELETE FROM users_blacklist
 WHERE file_id = $1 AND user_id =
-  (SELECT id FROM users WHERE username = $2);`
+(SELECT id FROM users WHERE username = $2);`;
+const queryDeleteApplication = `
+DELETE FROM membershipApplications
+WHERE username = $1;`;
+const queryRemoveTabooWord = `
+DELETE FROM tabooBlacklist
+WHERE taboo_word = $1;`;
+const queryResolveComplaint = `
+DELETE FROM complaints
+WHERE complainer_id = $1 AND file_id = $2 AND subject = $3;`;
+const queryDeleteUserInterest = `
+DELETE FROM user_interests
+WHERE user_id = $1 AND interest_id = $2;`;
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -243,6 +385,12 @@ module.exports = {
   },
   addHistoryFile: (params) => {
     return insertInfo(queryAddHistoryFile, params);
+  },
+  insertTabooWord: (params) => {
+    return insertInfo(querySubmitTabooWord, params);
+  },
+  insertNewApplication: (params) => {
+    return insertInfo(querySubmitApplication, params);
   },
   getLoginInfo: (params) => {
     return getInfo(queryLoginUser, params);
@@ -281,6 +429,16 @@ module.exports = {
   getValidUsersForInvite: (params) => {
     return getInfo(queryInviteValidUsers, params);
   },
+  getTabooWords: (params) => {
+    return getInfo(queryTabooWords, params);
+  },
+  getPendingApplications: (params) => {
+    return getInfo(queryPendingApplications, params);
+  },
+  getUserType: async (params) => {
+    var rows = await getInfo(queryUserType, params);
+    return rows[0].user_type;
+  },
   cancelInvite: (params) => {
     return client.query(queryCancelInvite, params);
   },
@@ -288,8 +446,15 @@ module.exports = {
     client.query(queryCancelInvite, params); // Delete invite from invites table
     return client.query(queryAddCollaborator, params);
   },
+  acceptApplication: (params) => {
+    client.query(queryDeleteApplication, params);
+    return client.query(queryUpdateMembership, params);
+  },
   declineInvite: (params) => {
     return client.query(queryCancelInvite, params);
+  },
+  declineApplication: (params) => {
+    return client.query(queryDeleteApplication, params);
   },
   updatePublicity: (params) => {
     return client.query(queryUpdatePublicity, params);
@@ -308,5 +473,32 @@ module.exports = {
   },
   updateText: (params) => {
     return client.query(queryUpdateText, params);
+  },
+  submitNewComplaint: (params) => {
+    return insertInfo(queryInsertComplaint, params);
+  },
+  getOwnerComplaints: (params) => {
+    return getInfo(queryOwnerComplaints, params);
+  },
+  getSUComplaints: (params) => {
+    return getInfo(querySUComplaints, params);
+  },
+  removeTabooWord: (params) => {
+    return client.query(queryRemoveTabooWord, params);
+  },
+  resolveComplaint: (params) => {
+    return client.query(queryResolveComplaint, params);
+  },
+  addUserInterest: (params) => {
+    return insertInfo(queryInsertUserInterest, params);
+  },
+  getUserInterests: (params) => {
+    return getInfo(querySpecificUsersInterests, params);
+  },
+  deleteUserInterest: (params) => {
+    return client.query(queryDeleteUserInterest, params);
+  },
+  getValidInterests: (params) => {
+    return getInfo(queryInterestsToChoose, params);
   }
 }

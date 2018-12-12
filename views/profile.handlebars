@@ -1,10 +1,18 @@
+<div id="heading">
+  <h1>{{data.rows.name}}'s Profile Page</h1>
+    {{#if data.isGuestUser}}
+  <form action="submit_application" method="get">
+    <input type="submit" value="Apply for Ordinary User">
+  </form>
+  {{/if}}
+</div>
+
 <div id="profile">
   <div id="sidebar">
-    <img src="{{picture_url}}" height="240" width="240"/>
-    <h2>{{name}}</h2>
-    <div>{{username}}</div>
-    <div>{{email}}</div>
-    <div>{{bio}}</div>
+    <img src="{{data.rows.picture_url}}" height="240" width="240"/>
+    <div>{{data.rows.username}}</div>
+    <div>{{data.rows.email}}</div>
+    <div>{{data.rows.bio}}</div>
   </div>
 
   <div id="main_info">
@@ -14,8 +22,30 @@
     </div>
     <div id="interests">
       <h2>Interests</h2>
-      <div>Coming Soon</div>
+      {{#if data.isTheirProfile}}
+        <form action="/profile/{{data.user_id}}/add_interest" method="post">
+          <input list="interests_dl" name="add_interest">
+          <datalist id="interests_dl">
+            {{#each data.valid_interests}}
+              <option value="{{interest_name}}"/>
+            {{/each}}
+          </datalist>
+          <input type="submit" value="Add Interest">
+        </form>
+      {{/if}}
+
+      {{#each data.interests}}
+        <div>
+          {{interest_name}}
+          {{#if ../data.isTheirProfile}}
+            <form action="/profile/{{../data.user_id}}/delete_interest" method="post">
+              <input hidden="hidden" name="interest_id" value="{{interest_id}}">
+              <button>Remove Interest</button>
+            </form>
+          {{/if}}
+        </div>
+      {{/each}}
+
     </div>
   </div>
-
 </div>

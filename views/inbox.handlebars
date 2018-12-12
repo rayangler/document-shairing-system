@@ -3,14 +3,19 @@
   <div id="center">
     <div class="vertical_navbar">
       <form method="get">
-        <button formaction="{{data.base_url}}/invites">Invites</button>
+        <button class="button" formaction="{{data.base_url}}/invites">Invites</button>
+        <button class="button" formaction="{{data.base_url}}/complaints">Complaints</button>
+        <button class="button" formaction="{{data.base_url}}/applications">Pending Applications</button>
       </form>
     </div>
     <div class="content">
       {{#if data.invites}}
         {{> inbox_invites this}}
-      {{else if data.invites}}
-        {{> file_invites this}}
+      {{else if data.complaints}}
+        {{> inbox_complaints this}}
+      {{/if}}
+      {{#if data.applications}}
+        {{> applications this}}
       {{/if}}
     </div>
   </div>

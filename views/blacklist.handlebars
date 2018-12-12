@@ -1,0 +1,31 @@
+<div id="blacklist_table">
+  <div id="heading">
+    <h1>Taboo Word Blacklist</h1>
+  </div>
+  <div id="submit_taboo">
+    <form action="/blacklist/submit" method="post">
+      <input type="text" name="submit_word">
+      <input type="submit" value="Submit">
+    </form>
+    <br/>
+  </div>
+  <table>
+    <tr>
+      <th>Taboo Word</th>
+      <th>Submitted by</th>
+      <th class="delete">Delete?</th>
+    </tr>
+    {{#each data.rows}}
+      <tr>
+        <td>{{taboo_word}}</td>
+        <td>{{submitted_by}}</td>
+        <td class="delete">
+          <form action="/blacklist/delete_taboo" method="post">
+            <input type="hidden" name="taboo_word" value="{{taboo_word}}">
+            <input type="submit" value="X">
+        </form>
+      </td>
+      </tr>
+    {{/each}}
+  </table>
+</div>

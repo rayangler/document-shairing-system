@@ -18,7 +18,8 @@ router.get('/:file_id', async (req, res) => {
   file_text = data.file_text;
   //console.log(data);
   res.render('file', data);
-})
+});
+
 
 router.use('/:file_id/manage', (req, res, next) => {
   req.file_id = req.params.file_id;
@@ -35,13 +36,57 @@ router.post('/:file_id/unlock', (req, res) => {
   res.redirect('back');
 });
 
-router.post('/:file_id/update', (req, res) =>{
+router.post('/:file_id/update', async (req, res) => {
   var newLines = req.body.text.split("\r\n");
   if (newLines[newLines.length-1] == ''){
     newLines.pop();
   }
+  var rows = await db.getFileInfo([req.params.file_id]);
+  var oldLines = rows[0].file_text.split("\r\n");
+  if (oldLines[oldLines.length-1] == ''){
+    oldLines.pop();
+  }
+  var retStr = "";
+  var index = 0;
+  if(oldLines.length == newLines.length){
+		for(i = 0; i < newLines.length; i++){
+			if(newLines[i] != oldLines[i]){
+				retStr = retStr + "update " + (i+1) + " " + oldLines[i] + "; ";
+			}
+		}
+  } else{
+      for(i = 0; i < newLines.length; i++){
+        if(oldLines[index] != newLines[i]){
+          retStr = retStr + "delete " + (i+1) + "; "
+        } else{
+          index++;
+        }
+      }
+      for(i = index; i < oldLines.length; i++){
+        retStr = retStr + "add " + oldLines[i] + "; "
+      }
+    }
+  retStr = retStr.substring(0, retStr.length - 2);
 
-  console.log(lines);
+  var version = rows[0].current_version;
+  db.addHistoryFile([req.params.file_id, version, retStr]);
   db.updateText([req.body.text, req.params.file_id]);
+  res.redirect('back');
+});
+
+router.get('/:file_id/complaint', (req, res) => {
+  var data = {};
+  data.file_id = req.params.file_id;
+  res.render('new_complaint', data);
+});
+
+router.post('/:file_id/complaint', (req, res) => {
+  db.submitNewComplaint([
+    req.app.get('userId'),
+    req.params.file_id,
+    req.body.recipient,
+    req.body.complaint_subject,
+    req.body.complaint_text
+  ]);
   res.redirect('back');
 });

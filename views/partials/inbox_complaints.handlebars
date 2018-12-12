@@ -1,0 +1,56 @@
+<div id="inbox_complaints_div">
+  <h3>Complaints</h3>
+  <hr/>
+
+  <div><strong>Complaints for Files</strong></div>
+  <br>
+
+  {{#each data.owner_complaints}}
+    <div>
+      <div>Subject: {{subject}}</div>
+      <div>By: {{complainer}}</div>
+      <div>For: <a href="/file/{{file_id}}">{{file_name}}</a></div>
+      <div>Submitted On: {{timestamp}}</div>
+      <div>{{complaint_text}}</div>
+    </div>
+
+    <form action="{{../data.base_url}}/resolve_complaint" method="post">
+      <input hidden="hidden" name="complainer_id" value="{{complainer_id}}">
+      <input hidden="hidden" name="file_id" value="{{file_id}}">
+      <input hidden="hidden" name="subject" value="{{subject}}">
+      <button>Resolved</button>
+    </form>
+
+    <br>
+  {{else}}
+    <div>No complaints for you.</div>
+  {{/each}}
+
+  {{#if data.super_user}}
+    <hr/>
+    <div><strong>Complaints for Super Users</strong></div>
+    <br>
+
+    {{#each data.su_complaints}}
+      <div>
+        <div>Subject: {{subject}}</div>
+        <div>By: {{complainer}}</div>
+        <div>For: <a href="/file/{{file_id}}">{{file_name}}</a></div>
+        <div>Submitted On: {{timestamp}}</div>
+        <div>{{complaint_text}}</div>
+      </div>
+
+      <form action="{{../data.base_url}}/resolve_complaint" method="post">
+        <input hidden="hidden" name="complainer_id" value="{{complainer_id}}">
+        <input hidden="hidden" name="file_id" value="{{file_id}}">
+        <input hidden="hidden" name="subject" value="{{subject}}">
+        <button>Resolved</button>
+      </form>
+
+      <br>
+    {{else}}
+      <div>No complaints for super users.</div>
+    {{/each}}
+
+  {{/if}}
+</div>
