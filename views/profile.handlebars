@@ -18,7 +18,22 @@
   <div id="main_info">
     <div id="recent_files">
       <h2>Recent Files</h2>
-      <div>Coming Soon</div>
+      <table>
+        <tr>
+          <th>File Name</th>
+          <th>Current Version</th>
+          <th>Created On</th>
+        </tr>
+        {{#each data.rows3}}
+
+            <tr>
+              <td><a href="/file/{{file_id}}">{{file_name}}</a></td>
+              <td>{{current_version}}</td>
+              <td>{{created_on}}</td>
+            </tr>
+
+        {{/each}}
+      </table>
     </div>
     <div id="interests">
       <h2>Interests</h2>
@@ -49,22 +64,6 @@
     </div>
     <br>
     <hr/>
-    <div> Most Recent Files </div>
-    <table>
-      <tr>
-        <th>File Name</th>
-        <th>Current Version</th>
-        <th>Created On</th>
-      </tr>
-      {{#each data.rows3}}
 
-          <tr>
-            <td><a href="/file/{{file_id}}">{{file_name}}</a></td>
-            <td>{{current_version}}</td>
-            <td>{{created_on}}</td>
-          </tr>
-
-      {{/each}}
-    </table>
   </div>
 </div>
