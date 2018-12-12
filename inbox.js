@@ -49,17 +49,19 @@ router.get('/complaints', async (req, res) => {
   data.base_url = req.baseUrl;
   data.user_type = await db.getUserType([req.app.get('username')]);
   data.owner_complaints = await db.getOwnerComplaints([req.app.get('userId')]);
-  /*
   if (data.user_type == 'super') {
     data.super_user = true;
     data.su_complaints = await db.getSUComplaints([req.app.get('userId')]);
-  }*/
+  }
+  console.log(data);
   res.render('inbox', {data});
 });
 
 router.post('/resolve_complaint', (req, res) => {
+  db.resolveComplaint([req.body.complainer_id, req.body.file_id, req.body.subject]);
   res.redirect('back');
 });
+
 router.post('/accept_application', (req, res) => {
   db.acceptApplication([req.app.get('username')]);
   console.log(req.app.get('user_type'));
