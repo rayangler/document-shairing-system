@@ -32,6 +32,7 @@ app.get('/create_profile', (req, res) => {
   res.render('create_profile');
 });
 
+// Creates blacklist page for taboo words
 app.get('/blacklist', (req, res) => {
   res.render('blacklist');
 });
@@ -73,12 +74,13 @@ app.post('/login_user', async (req, res) => {
   const email = req.body.email1;
   var rows = await db.getLoginInfo([username, email]);
   var userId = rows[0].id;
-  var userType = rows[0].user_type;
+  var userType = await db.getUserType([username]);
   app.set('userId', userId);
   app.set('username', username);
   app.set('userType', userType);
   console.log('Logged in. User: ' + userId);
   console.log('Username: ' + username);
+  console.log('User type: ' + userType);
   res.redirect('/files/' + userId);
 });
 
