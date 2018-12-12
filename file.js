@@ -65,6 +65,32 @@ router.post('/:file_id/update', async (req, res) => {
   var rows = await db.getFileInfo([req.params.file_id]);
   if(req.app.get('userId') == rows[0].editor_id){
     var newLines = req.body.text.split("\r\n");
+
+    // Get array of taboo words
+    var tabooWordsArray = await db.getListTabooWords();
+    tabooList = []
+    for(i=0; i < tabooWordsArray.length; i++) {
+      var row = tabooWordsArray[i];
+      tabooList.push(row['taboo_word']);
+    }
+
+    // Replace all instances of taboo words with UNK
+    for(i=0; i<newLines.length; i++) {
+      for(j=0; j<tabooWordsArray.length; j++) {
+        if(newLines[i] == tabooList[j]) {
+          newLines[i] = 'UNK';
+        }
+      }
+    }
+
+    var bodyText = req.body.text;
+    for(i=0; i<tabooList.length; i++) {
+      console.log('Changing: ' + tabooList[i]);
+      var re = new RegExp(tabooList[i], 'g');
+      bodyText = bodyText.replace(re, 'UNK')
+      // var resd = bodyText.replace(/${tabooWordsArray[0]}/gi, "UNK");
+    }
+
     if (newLines[newLines.length-1] == ''){
       newLines.pop();
     }
@@ -94,9 +120,10 @@ router.post('/:file_id/update', async (req, res) => {
       }
     retStr = retStr.substring(0, retStr.length - 2);
 
+
     var version = rows[0].current_version;
     db.addHistoryFile([req.params.file_id, version, retStr]);
-    db.updateText([req.body.text, req.params.file_id]);
+    db.updateText([bodyText, req.params.file_id]);
   }
   res.redirect('back');
 });
