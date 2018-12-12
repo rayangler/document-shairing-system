@@ -238,3 +238,9 @@ input[type=textarea] {
   vertical-align: top;
   height: 5em;
 }
+
+#guestInbox {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
