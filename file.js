@@ -15,7 +15,8 @@ router.get('/:file_id', async (req, res) => {
   var data = rows[0];
   data.file_id = file_id;
   req.app.set('file_id', file_id);
-  console.log(data);
+  file_text = data.file_text;
+  //console.log(data);
   res.render('file', data);
 })
 
@@ -23,3 +24,24 @@ router.use('/:file_id/manage', (req, res, next) => {
   req.file_id = req.params.file_id;
   next();
 }, require('./manage'));
+
+router.post('/:file_id/lock', (req, res) => {
+  db.addEditor([req.app.get('userId'), req.params.file_id]);
+  res.redirect('back');
+});
+
+router.post('/:file_id/unlock', (req, res) => {
+  db.removeEditor([req.app.get('userId'), req.params.file_id]);
+  res.redirect('back');
+});
+
+router.post('/:file_id/update', (req, res) =>{
+  var newLines = req.body.text.split("\r\n");
+  if (newLines[newLines.length-1] == ''){
+    newLines.pop();
+  }
+
+  console.log(lines);
+  db.updateText([req.body.text, req.params.file_id]);
+  res.redirect('back');
+});

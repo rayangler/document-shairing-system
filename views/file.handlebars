@@ -6,15 +6,18 @@
 
   <div id="center">
     <div id="lhs_file_gui">
+      <button type="submit" form="file_text">Make Changes</button>
       <form>
-        <button>Make Changes</button>
-        <button>Lock/Unlock Document</button>
+        <button type="submit" formaction="/file/{{file_id}}/lock" formmethod="post">Lock Document</button>
+        <button type="submit" formaction="/file/{{file_id}}/unlock" formmethod="post">Unlock Document</button>
         <button type="submit" formaction="/file/{{file_id}}/manage" formmethod="get">Manage File</button>
         <button>Version History</button>
       </form>
     </div>
     <div id="text_file">
-      <textarea></textarea>
+      <form action="/file/{{file_id}}/update" method="post" id="file_text">
+        <textarea name="text">{{file_text}}</textarea>
+      </form>
     </div>
     <div id="rhs_file_gui">
       <button>File Complaint</button>

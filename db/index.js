@@ -40,10 +40,20 @@ CREATE TABLE IF NOT EXISTS files(
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id),
   file_name TEXT DEFAULT 'Untitled_File',
-  current_version TEXT DEFAULT '1',
+  file_text TEXT DEFAULT '',
+  current_version INTEGER DEFAULT 1,
   created_on TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  editor_id INTEGER REFERENCES users(id) DEFAULT NULL,
   publicity VARCHAR(255) DEFAULT 'public'
 );`;
+// History Files Table. A table for the history files of each file.
+const createHistoryFilesTable = `
+CREATE TABLE IF NOT EXISTS history_files(
+  id INTEGER REFERENCES files(id),
+  version INTEGER,
+  history_text TEXT
+);`;
+
 // Invites Table. A table for the invites between users to files.
 const createInvitesTable = `
 CREATE TABLE IF NOT EXISTS invites(
@@ -75,6 +85,9 @@ client.query(createProfilesTable, (err, res) => {
 client.query(createFilesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+client.query(createHistoryFilesTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
 client.query(createInvitesTable, (err, res) => {
   if (err) console.log(err.stack);
 });
@@ -99,6 +112,8 @@ WHERE username = $2;`
 const queryInviteUser = `INSERT INTO invites(from_user, to_user, file_id)
 VALUES($1, $2, $3)`;
 const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
+const queryAddHistoryFile = `INSERT INTO history_files(id, version, history_text)
+VALUES($1, $2, $3)`;
 
 // Selects
 const queryLoginUser = `
@@ -125,6 +140,10 @@ JOIN profiles ON users.id = profiles.user_id
 LEFT JOIN files ON users.id = files.user_id
 WHERE users.id = $1 AND files.file_name ILIKE '%' || $2 || '%'
 ORDER BY created_on DESC;`;
+const queryHistoryFileInfo = `
+SELECT * FROM history_files
+JOIN files ON history_files.id = files.id
+WHERE history_files.id = $1;`;
 const queryInviteValidUsers = `
 SELECT username FROM users
 WHERE username != $1 AND NOT EXISTS
@@ -166,6 +185,19 @@ WHERE file_id = $1;`;
 const queryUpdatePublicity = `
 UPDATE files
 SET publicity = $1
+WHERE id = $2;`;
+const queryAddEditor = `
+UPDATE files
+SET editor_id = $1
+WHERE id = $2 AND editor_id IS NULL;`;
+const queryRemoveEditor = `
+UPDATE files
+SET editor_id = NULL
+WHERE id = $2 AND editor_id = $1;`;
+const queryUpdateText = `
+UPDATE files
+SET file_text = $1,
+    current_version = current_version + 1
 WHERE id = $2;`;
 
 // Deletion
@@ -209,6 +241,9 @@ module.exports = {
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);
   },
+  addHistoryFile: (params) => {
+    return insertInfo(queryAddHistoryFile, params);
+  },
   getLoginInfo: (params) => {
     return getInfo(queryLoginUser, params);
   },
@@ -224,6 +259,9 @@ module.exports = {
   getFilePublicity: async (params) => {
     var rows = await getInfo(queryFilePublicity, params);
     return rows[0].publicity;
+  },
+  getHistoryFileInfo: (params) => {
+    return getInfo(queryHistoryFileInfo, params);
   },
   getCollaborators: (params) => {
     return getInfo(queryCollaborators, params);
@@ -261,5 +299,14 @@ module.exports = {
   },
   removeBlacklistedUser: (params) => {
     return client.query(queryRemoveBlacklistedUser, params);
+  },
+  addEditor: (params) => {
+    return client.query(queryAddEditor, params);
+  },
+  removeEditor: (params) => {
+    return client.query(queryRemoveEditor, params);
+  },
+  updateText: (params) => {
+    return client.query(queryUpdateText, params);
   }
 }
