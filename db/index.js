@@ -227,7 +227,7 @@ SELECT * FROM users
 JOIN profiles ON profiles.user_id = users.id
 WHERE id = $1;`;
 const queryUserFiles = `
-SELECT profiles.name, file_name, current_version, created_on FROM users
+SELECT profiles.name, file_name, current_version, created_on, files.id AS file_id FROM users
 JOIN profiles ON users.id = profiles.user_id
 LEFT JOIN files ON users.id = files.user_id
 WHERE users.id = $1
@@ -344,6 +344,9 @@ const queryCheckProfileExists = `
 SELECT 1 FROM profiles
 JOIN users ON profiles.user_id = users.id
 WHERE users.id = $1;`
+const queryUsername = `
+SELECT username FROM users
+WHERE users.id = $1;`;
 
 // Updates
 const queryUpdatePublicity = `
@@ -566,5 +569,12 @@ module.exports = {
     } else {
       return true;
     }
+  },
+  getUsername: async (params) => {
+    var rows = await getInfo(queryUsername, params);
+    return rows[0].username;
+  },
+  searchFiles: (params) => {
+    return getInfo(querySearchFiles, params);
   }
 }

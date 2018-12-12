@@ -1,6 +1,6 @@
 <div id="files_table">
   <div id="heading">
-    <h1>{{data.name}}'s Files</h1>
+    <h1>{{data.username}}'s Files</h1>
     <form action="/create_new_file" method="post">
       <input type="submit" value="+ Create New File">
     </form>
@@ -16,11 +16,11 @@
     <tr>
       <th>File Name</th>
       <th>Current Version</th>
-      <th>Last Updated</th>
+      <th>Created On</th>
     </tr>
     {{#each data.rows}}
       <tr>
-        <td>{{file_name}}</td>
+        <td><a href="/file/{{file_id}}">{{file_name}}</a></td>
         <td>{{current_version}}</td>
         <td>{{created_on}}</td>
       </tr>

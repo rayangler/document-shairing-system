@@ -24,14 +24,22 @@ router.get('/:user_id', async (req, res) => {
     res.redirect('/');
     return;
   }
+
   const user_id = req.params.user_id;
   var data = {}
   var rows = await db.getUserFiles([user_id]);
   data.rows = rows;
-  data.name = rows[0].name;
+  data.username = await db.getUsername([user_id]);
   data.user_id = user_id;
   console.log(data);
   res.render('files', {data});
 });
 
 // Need to reimplement search feature
+router.post('/:user_id/search', async (req, res) => {
+  var data = {};
+  data.user_id = req.params.user_id;
+  data.username = await db.getUsername([data.user_id]);
+  data.rows = await db.searchFiles([data.user_id, req.body.search_info]);
+  res.render('files', {data});
+});
