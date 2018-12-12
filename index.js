@@ -73,8 +73,10 @@ app.post('/login_user', async (req, res) => {
   const email = req.body.email1;
   var rows = await db.getLoginInfo([username, email]);
   var userId = rows[0].id;
+  var userType = rows[0].user_type;
   app.set('userId', userId);
   app.set('username', username);
+  app.set('userType', userType);
   console.log('Logged in. User: ' + userId);
   console.log('Username: ' + username);
   res.redirect('/files/' + userId);

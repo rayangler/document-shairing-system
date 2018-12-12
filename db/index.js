@@ -193,6 +193,15 @@ const queryBlacklistedUsers = `
 SELECT username FROM users
 JOIN users_blacklist ON users.id = users_blacklist.user_id
 WHERE file_id = $1;`;
+const queryUserType = `SELECT user_type from users
+WHERE username = $1;`;
+const queryOwnerComplaints = `
+SELECT subject, users.username AS complainer, file_name, complaints.timestamp,
+  complaint_text FROM complaints
+JOIN files ON files.id = complaints.file_id
+JOIN users ON complainer_id = users.id
+WHERE files.user_id = $1
+ORDER BY complaints.timestamp DESC;`;
 
 // Updates
 const queryUpdatePublicity = `
@@ -303,5 +312,12 @@ module.exports = {
   },
   submitNewComplaint: (params) => {
     return insertInfo(queryInsertComplaint, params);
+  },
+  getUserType: async (params) => {
+    var rows = await getInfo(queryUserType, params);
+    return rows[0].user_type;
+  },
+  getOwnerComplaints: (params) => {
+    return getInfo(queryOwnerComplaints, params);
   }
 }
