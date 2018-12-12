@@ -1,5 +1,9 @@
 <div id="top">
   <h1>{{file_name}}</h1>
+  <button class="button" type="submit" formaction="/file/{{file_id}}/rename" formmethod="post" form="form">Rename</button>
+  <form id="form">
+    <input type="input" name="rename">
+  </form>
   <h3>Owned by: {{name}}</h3>
   <h3>Locked by: {{locker}}</h3>
 </div>

@@ -176,6 +176,10 @@ async function versionRetrieval(file_id, current_version, current_text, old_vers
 
 router.post('/:file_id/version', async (req, res) => {
   var rows = await db.getFileInfo([req.params.file_id]);
-  var result = await versionRetrieval(req.params.file_id, 3, rows[0].file_text, 0);
+  var result = await versionRetrieval(req.params.file_id, 1, rows[0].file_text, 0);
   console.log(result);
+});
+
+router.post('/:file_id/rename', (req, res) => {
+  db.renameFile([req.params.file_id, req.body.rename]);
 });

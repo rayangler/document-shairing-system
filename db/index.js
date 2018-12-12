@@ -407,6 +407,10 @@ const queryAcceptTabooWord = `
 UPDATE tabooBlacklist
 SET status = 'confirmed'
 WHERE taboo_word = $1;`;
+const queryRenameFile = `
+UPDATE Files
+SET file_name = $2
+WHERE id = $1;`;
 
 // Deletion
 const queryRemoveCollaborator = `
@@ -596,6 +600,9 @@ module.exports = {
   },
   getValidInterests: (params) => {
     return getInfo(queryInterestsToChoose, params);
+  },
+  renameFile: (params) => {
+    return client.query(queryRenameFile, params);
   },
   getUsersList: (params) => {
     if (params[1] == '') {
