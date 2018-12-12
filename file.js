@@ -15,7 +15,8 @@ router.get('/:file_id', async (req, res) => {
   var data = rows[0];
   data.file_id = file_id;
   req.app.set('file_id', file_id);
-  console.log(data);
+  file_text = data.file_text;
+  //console.log(data);
   res.render('file', data);
 });
 
@@ -24,6 +25,61 @@ router.use('/:file_id/manage', (req, res, next) => {
   req.file_id = req.params.file_id;
   next();
 }, require('./manage'));
+
+router.post('/:file_id/lock', (req, res) => {
+  //if(req.app.get('userType') != "guest"){
+    db.addEditor([req.app.get('userId'), req.params.file_id]);
+  //}
+  res.redirect('back');
+});
+
+router.post('/:file_id/unlock', async (req, res) => {
+  var rows = await db.getFileInfo([req.params.file_id]);
+  if(req.app.get('userId') == rows[0].editor_id){
+    db.removeEditor([req.app.get('userId'), req.params.file_id]);
+  }
+  res.redirect('back');
+});
+
+router.post('/:file_id/update', async (req, res) => {
+  var rows = await db.getFileInfo([req.params.file_id]);
+  if(req.app.get('userId') == rows[0].editor_id){
+    var newLines = req.body.text.split("\r\n");
+    if (newLines[newLines.length-1] == ''){
+      newLines.pop();
+    }
+    var oldLines = rows[0].file_text.split("\r\n");
+    if (oldLines[oldLines.length-1] == ''){
+      oldLines.pop();
+    }
+    var retStr = "";
+    var index = 0;
+    if(oldLines.length == newLines.length){
+  		for(i = 0; i < newLines.length; i++){
+  			if(newLines[i] != oldLines[i]){
+  				retStr = retStr + "update " + (i+1) + " " + oldLines[i] + "; ";
+  			}
+  		}
+    } else{
+        for(i = 0; i < newLines.length; i++){
+          if(oldLines[index] != newLines[i]){
+            retStr = retStr + "delete " + (i+1) + "; "
+          } else{
+            index++;
+          }
+        }
+        for(i = index; i < oldLines.length; i++){
+          retStr = retStr + "add " + oldLines[i] + "; "
+        }
+      }
+    retStr = retStr.substring(0, retStr.length - 2);
+
+    var version = rows[0].current_version;
+    db.addHistoryFile([req.params.file_id, version, retStr]);
+    db.updateText([req.body.text, req.params.file_id]);
+  }
+  res.redirect('back');
+});
 
 router.get('/:file_id/complaint', (req, res) => {
   var data = {};
