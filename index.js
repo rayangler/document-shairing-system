@@ -21,6 +21,7 @@ app.use('/files', require('./files'));
 app.use('/inbox', require('./inbox'));
 app.use('/profile', require('./profile'));
 app.use('/blacklist', require('./blacklist'));
+app.use('/users', require('./users'));
 
 // Landing page.
 app.get('/', (req, res) => {
