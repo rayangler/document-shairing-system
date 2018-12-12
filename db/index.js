@@ -232,6 +232,13 @@ JOIN profiles ON users.id = profiles.user_id
 LEFT JOIN files ON users.id = files.user_id
 WHERE users.id = $1
 ORDER BY created_on DESC;`;
+const queryThreeUserFiles = `
+SELECT profiles.name, file_name, current_version, created_on, files.id AS file_id FROM users
+JOIN profiles ON users.id = profiles.user_id
+LEFT JOIN files ON users.id = files.user_id
+WHERE users.id = $1
+ORDER BY created_on DESC
+LIMIT 3;`;
 const queryFileInfo = `
 SELECT * FROM files
 JOIN users ON files.user_id = users.id
@@ -463,6 +470,9 @@ module.exports = {
   },
   getUserFiles: (params) => {
     return getInfo(queryUserFiles, params);
+  },
+  getThreeUserFiles: (params) => {
+    return getInfo(queryThreeUserFiles, params);
   },
   getFileInfo: (params) => {
     return getInfo(queryFileInfo, params);
