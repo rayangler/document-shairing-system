@@ -25,12 +25,14 @@ router.get('/submit_application', (req, res) => {
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
   var rows = await db.getProfilePage([id]);
+  var rows3 = await db.getThreeUserFiles([id]);
   var userType = await db.getUserType([req.app.get('username')]);
   var data = {}
-  data.rows = rows[0]
+  data.rows = rows[0];
   if (userType == 'guest') {
     data.isGuestUser = true;
   };
+  data.rows3 = rows3;
   data.interests = await db.getUserInterests([id]);
   if (id == req.app.get('userId')) {
     data.isTheirProfile = true;
