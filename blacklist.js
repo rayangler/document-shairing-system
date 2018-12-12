@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
   var rows = await db.getConfirmedTabooWords();
   data.rows = rows;
   var userType = await db.getUserType([req.app.get('username')]);
-  if (userType = 'super') {
+  if (userType == 'super') {
     data.isSuperUser = true;
   };
 
