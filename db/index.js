@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users(
   username VARCHAR(255) UNIQUE,
   email VARCHAR(255) UNIQUE,
   user_type VARCHAR(255) DEFAULT 'guest',
-  password VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL DEFAULT 'password',
   CHECK (password <> '')
 );`;
 // Profiles Table. Profiles are linked to users and contain most of the
