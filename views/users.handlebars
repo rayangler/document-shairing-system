@@ -1,0 +1,19 @@
+<div id="users_div">
+  <h1>Users</h1>
+
+  <form action="/users/search" method="post">
+    <div>Search</div>
+    <div>Name<input type="text" name="name"></div>
+    <div>Interests<input type="text" name="interests"></div>
+    <input type="submit" value="Search">
+  </form>
+  <br>
+
+  {{#each data.users_list}}
+    <div><a href="/profile/{{user_id}}">{{username}}</a><div>
+    <div>{{name}}</div>
+    <div>{{user_type}}</div>
+    <br>
+  {{/each}}
+
+</div>
