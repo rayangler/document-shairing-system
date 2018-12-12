@@ -14,7 +14,6 @@ router.get('/', async (req, res) => {
   if (userType == 'super') {
     data.isSuperUser = true;
   };
-
   console.log(data);
   res.render('blacklist', {data});
 });
