@@ -8,7 +8,7 @@ module.exports = router;
 
 router.get('/', async (req, res) => {
   var data = {}
-  var rows = await db.getTabooWords();
+  var rows = await db.getConfirmedTabooWords();
   data.rows = rows;
   console.log(data);
   res.render('blacklist', {data});
@@ -19,7 +19,7 @@ router.post('/submit', (req, res) => {
   const submittedBy = req.app.get('username');
   console.log('New taboo word submitted: ' + tabooWord);
   // need to add conditional for if user = guest, then only a request is sent
-  db.insertTabooWord([tabooWord, submittedBy]);
+  db.submitTabooWord([tabooWord, submittedBy]);
   res.redirect('back');
 });
 

@@ -66,7 +66,7 @@ const createTabooTable = `
 CREATE TABLE IF NOT EXISTS tabooBlacklist(
   taboo_word VARCHAR(255) NOT NULL UNIQUE,
   CHECK (taboo_word <> ''),
-  submitted_by VARCHAR(255) REFERENCES users(username)
+  submitted_by VARCHAR(255) REFERENCES users(username),
   status VARCHAR(255) DEFAULT 'pending'
 );`;
 // Collaborators Table. A table for users who have accepted their invites to edit files.
@@ -190,10 +190,10 @@ ORDER BY to_user ASC;`;
 const querySuggestedTabooWords = `
 SELECT * FROM tabooBlacklist
 WHERE status = 'pending'
-ORDER BY ASC;`;
-const queryAcceptedTabooWords = `
+ORDER BY taboo_word ASC;`;
+const queryConfirmedTabooWords = `
 SELECT * FROM tabooBlacklist
-WHERE status = 'accepted'
+WHERE status = 'confirmed'
 ORDER BY taboo_word ASC;`;
 const queryFilePublicity = `
 SELECT publicity FROM files
@@ -240,6 +240,10 @@ const queryUpdateMembership = `
 UPDATE users
 SET user_type = 'ordinary'
 WHERE username = $1;`;
+const queryAcceptTabooWord = `
+UPDATE tabooBlacklist
+SET status = 'confirmed'
+WHERE taboo_word = $1;`;
 
 // Deletion
 const queryRemoveCollaborator = `
@@ -291,9 +295,6 @@ module.exports = {
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);
   },
-  insertTabooWord: (params) => {
-    return insertInfo(querySubmitTabooWord, params);
-  },
   insertNewApplication: (params) => {
     return insertInfo(querySubmitApplication, params);
   },
@@ -334,8 +335,8 @@ module.exports = {
   getSuggestedTabooWords: (params) => {
     return getInfo(querySuggestedTabooWords, params);
   },
-  getAcceptedTabooWords: (params) => {
-    return getInfo(queryAcceptedTabooWords, params);
+  getConfirmedTabooWords: (params) => {
+    return getInfo(queryConfirmedTabooWords, params);
   },
   getPendingApplications: (params) => {
     return getInfo(queryPendingApplications, params);
@@ -354,6 +355,9 @@ module.exports = {
   acceptApplication: (params) => {
     client.query(queryDeleteApplication, params);
     return client.query(queryUpdateMembership, params);
+  },
+  acceptTabooWord: (params) => {
+    return client.query(queryAcceptTabooWord, params);
   },
   declineInvite: (params) => {
     return client.query(queryCancelInvite, params);
@@ -378,6 +382,9 @@ module.exports = {
   },
   getSUComplaints: (params) => {
     return getInfo(querySUComplaints, params);
+  },
+  submitTabooWord: (params) => {
+    return insertInfo(querySubmitTabooWord, params);
   },
   removeTabooWord: (params) => {
     return client.query(queryRemoveTabooWord, params);
