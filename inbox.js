@@ -81,13 +81,13 @@ router.post('/resolve_complaint', (req, res) => {
 });
 
 router.post('/accept_application', (req, res) => {
-  db.acceptApplication([req.app.get('username')]);
-  console.log(req.app.get('user_type'));
+  db.acceptApplication([req.body.username]);
   res.redirect('back');
 });
 
 router.post('/decline_application', (req, res) => {
-  db.declineApplication([req.app.get('username')]);
+  db.declineApplication([req.body.username]);
+  res.redirect('back');
 });
 
 router.post('/accept_word', (req, res) => {

@@ -16,6 +16,7 @@
         <td>{{technical_interests}}</td>
         <td>
           <form method="post">
+            <input hidden="hidden" value="{{username}}" name="username">
             <input type="submit" value="Accept"
               formaction="{{../data.base_url}}/accept_application">
             <input type="submit" value="Decline" formaction="{{../data.base_url}}/decline_application"
