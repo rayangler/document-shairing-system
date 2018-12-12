@@ -29,7 +29,7 @@ router.get('/applications', async (req, res) => {
   var data = {};
   data.base_url = '/inbox';
   data.applications = true;
-  data.pending_applications = await db.getPendingApplications()
+  data.pending_applications = await db.getPendingApplications();
   console.log(data);
   res.render('inbox', {data})
 });
@@ -52,11 +52,11 @@ router.get('/taboo', async (req, res) => {
   var data = {};
   data.base_url = req.baseUrl;
   data.taboo = true;
-  data.taboo_suggestions = await db.getSuggestedTabooWords();
+  data.taboo_suggestions = await db.getSuggestedTabooWords([]);
   data.user_type = await db.getUserType([req.app.get('username')]);
   console.log(data);
-  res.render('inbox', {data})
-})
+  res.render('inbox', {data});
+});
 
 router.post('/accept_invite', (req, res) => {
   db.acceptInvite([req.app.get('username'), req.body.file_id]);
