@@ -391,15 +391,12 @@ module.exports = {
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);
   },
-<<<<<<< HEAD
   addHistoryFile: (params) => {
     return insertInfo(queryAddHistoryFile, params);
   },
   insertTabooWord: (params) => {
     return insertInfo(querySubmitTabooWord, params);
   },
-=======
->>>>>>> master
   insertNewApplication: (params) => {
     return insertInfo(querySubmitApplication, params);
   },
