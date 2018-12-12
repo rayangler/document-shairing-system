@@ -13,19 +13,23 @@
     <tr>
       <th>Taboo Word</th>
       <th>Submitted by</th>
+      {{#if data.isSuperUser}}
       <th class="delete">Delete?</th>
+      {{/if}}
     </tr>
     {{#each data.rows}}
-      <tr>
-        <td>{{taboo_word}}</td>
-        <td>{{submitted_by}}</td>
-        <td class="delete">
-          <form action="/blacklist/delete_taboo" method="post">
-            <input type="hidden" name="taboo_word" value="{{taboo_word}}">
-            <input type="submit" value="X">
+    <tr>
+      <td>{{taboo_word}}</td>
+      <td>{{submitted_by}}</td>
+      {{#if ../data.isSuperUser}}
+      <td class="delete">
+        <form action="/blacklist/delete_taboo" method="post">
+          <input type="hidden" name="taboo_word" value="{{taboo_word}}">
+          <input type="submit" value="X">
         </form>
       </td>
-      </tr>
+      {{/if}}
+    </tr>
     {{/each}}
   </table>
 </div>

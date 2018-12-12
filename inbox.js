@@ -20,6 +20,7 @@ router.get('/invites', async (req, res) => {
   data.base_url = req.baseUrl;
   data.invites = true;
   data.pending_invites = await db.getPendingInvites([req.app.get('username')])
+  data.user_type = await db.getUserType([req.app.get('username')]);
   console.log(data);
   res.render('inbox', {data});
 });
@@ -28,19 +29,9 @@ router.get('/applications', async (req, res) => {
   var data = {};
   data.base_url = '/inbox';
   data.applications = true;
-  data.pending_applications = await db.getPendingApplications()
+  data.pending_applications = await db.getPendingApplications();
   console.log(data);
   res.render('inbox', {data})
-});
-
-router.post('/accept_invite', (req, res) => {
-  db.acceptInvite([req.app.get('username'), req.body.file_id]);
-  res.redirect('back');
-});
-
-router.post('/decline_invite', (req, res) => {
-  db.declineInvite([req.app.get('username'), req.body.file_id]);
-  res.redirect('back');
 });
 
 router.get('/complaints', async (req, res) => {
@@ -57,6 +48,26 @@ router.get('/complaints', async (req, res) => {
   res.render('inbox', {data});
 });
 
+router.get('/taboo', async (req, res) => {
+  var data = {};
+  data.base_url = req.baseUrl;
+  data.taboo = true;
+  data.taboo_suggestions = await db.getSuggestedTabooWords();
+  data.user_type = await db.getUserType([req.app.get('username')]);
+  console.log(data);
+  res.render('inbox', {data});
+});
+
+router.post('/accept_invite', (req, res) => {
+  db.acceptInvite([req.app.get('username'), req.body.file_id]);
+  res.redirect('back');
+});
+
+router.post('/decline_invite', (req, res) => {
+  db.declineInvite([req.app.get('username'), req.body.file_id]);
+  res.redirect('back');
+});
+
 router.post('/resolve_complaint', (req, res) => {
   db.resolveComplaint([req.body.complainer_id, req.body.file_id, req.body.subject]);
   res.redirect('back');
@@ -70,4 +81,15 @@ router.post('/accept_application', (req, res) => {
 
 router.post('/decline_application', (req, res) => {
   db.declineApplication([req.app.get('username')]);
+});
+
+router.post('/accept_word', (req, res) => {
+  db.acceptTabooWord([req.body.tabooWord]);
+  console.log(req.body.tabooWord);
+  res.redirect('back');
+});
+
+router.post('/decline_word', (req, res) => {
+  db.removeTabooWord([req.body.tabooWord]);
+  res.redirect('back');
 });

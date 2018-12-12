@@ -1,22 +1,32 @@
 <div class="vertical_menu" id="inbox_div">
-  <h1>Inbox</h1>
-  <div id="center">
-    <div class="vertical_navbar">
-      <form method="get">
-        <button class="button" formaction="{{data.base_url}}/invites">Invites</button>
-        <button class="button" formaction="{{data.base_url}}/complaints">Complaints</button>
-        <button class="button" formaction="{{data.base_url}}/applications">Pending Applications</button>
-      </form>
-    </div>
-    <div class="content">
-      {{#if data.invites}}
-        {{> inbox_invites this}}
-      {{else if data.complaints}}
-        {{> inbox_complaints this}}
-      {{/if}}
-      {{#if data.applications}}
-        {{> applications this}}
-      {{/if}}
+
+  {{#if data.isGuestUser}}
+    <br>
+    <div>You do not have permission for this :P</div>
+  {{else}}
+    <h1>Inbox</h1>
+
+    <div id="center">
+      <div class="vertical_navbar">
+        <form method="get">
+          <button class="button" formaction="{{data.base_url}}/invites">Invites</button>
+          <button class="button" formaction="{{data.base_url}}/complaints">Complaints</button>
+          <button class="button" formaction="{{data.base_url}}/applications">Pending Applications</button>
+          <button class="button" formaction="{{data.base_url}}/taboo">Taboo Suggestions</button>
+        </form>
+      </div>
+
+      <div class="content">
+        {{#if data.invites}}
+          {{> inbox_invites this}}
+        {{else if data.complaints}}
+          {{> inbox_complaints this}}
+        {{else if data.applications}}
+          {{> applications this}}
+        {{else if data.taboo}}
+          {{> taboo_suggestions this}}
+        {{/if}}
     </div>
   </div>
+  {{/if}}
 </div>

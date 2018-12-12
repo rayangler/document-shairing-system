@@ -71,15 +71,14 @@ CREATE TABLE IF NOT EXISTS membershipApplications(
   technical_interests TEXT,
   status VARCHAR(255) DEFAULT 'pending'
 );`;
-
 // Taboo Blacklist Table. A table for the list of taboo words in the system.
 const createTabooTable = `
 CREATE TABLE IF NOT EXISTS tabooBlacklist(
   taboo_word VARCHAR(255) NOT NULL UNIQUE,
   CHECK (taboo_word <> ''),
-  submitted_by VARCHAR(255) REFERENCES users(username)
+  submitted_by VARCHAR(255) REFERENCES users(username),
+  status VARCHAR(255) DEFAULT 'pending'
 );`;
-
 // Collaborators Table. A table for users who have accepted their invites to edit files.
 const createCollaboratorsTable = `
 CREATE TABLE IF NOT EXISTS collaborators(
@@ -258,8 +257,13 @@ const queryInvitedUsers = `
 SELECT * FROM invites
 WHERE file_id = $1 AND status = 'pending'
 ORDER BY to_user ASC;`;
-const queryTabooWords = `
+const querySuggestedTabooWords = `
 SELECT * FROM tabooBlacklist
+WHERE status = 'pending'
+ORDER BY taboo_word ASC;`;
+const queryConfirmedTabooWords = `
+SELECT * FROM tabooBlacklist
+WHERE status = 'confirmed'
 ORDER BY taboo_word ASC;`;
 const queryFilePublicity = `
 SELECT publicity FROM files
@@ -329,6 +333,10 @@ const queryUpdateMembership = `
 UPDATE users
 SET user_type = 'ordinary'
 WHERE username = $1;`;
+const queryAcceptTabooWord = `
+UPDATE tabooBlacklist
+SET status = 'confirmed'
+WHERE taboo_word = $1;`;
 
 // Deletion
 const queryRemoveCollaborator = `
@@ -383,12 +391,15 @@ module.exports = {
   insertNewInvite: (params) => {
     return insertInfo(queryInviteUser, params);
   },
+<<<<<<< HEAD
   addHistoryFile: (params) => {
     return insertInfo(queryAddHistoryFile, params);
   },
   insertTabooWord: (params) => {
     return insertInfo(querySubmitTabooWord, params);
   },
+=======
+>>>>>>> master
   insertNewApplication: (params) => {
     return insertInfo(querySubmitApplication, params);
   },
@@ -429,8 +440,11 @@ module.exports = {
   getValidUsersForInvite: (params) => {
     return getInfo(queryInviteValidUsers, params);
   },
-  getTabooWords: (params) => {
-    return getInfo(queryTabooWords, params);
+  getSuggestedTabooWords: (params) => {
+    return getInfo(querySuggestedTabooWords, params);
+  },
+  getConfirmedTabooWords: (params) => {
+    return getInfo(queryConfirmedTabooWords, params);
   },
   getPendingApplications: (params) => {
     return getInfo(queryPendingApplications, params);
@@ -449,6 +463,9 @@ module.exports = {
   acceptApplication: (params) => {
     client.query(queryDeleteApplication, params);
     return client.query(queryUpdateMembership, params);
+  },
+  acceptTabooWord: (params) => {
+    return client.query(queryAcceptTabooWord, params);
   },
   declineInvite: (params) => {
     return client.query(queryCancelInvite, params);
@@ -482,6 +499,9 @@ module.exports = {
   },
   getSUComplaints: (params) => {
     return getInfo(querySUComplaints, params);
+  },
+  submitTabooWord: (params) => {
+    return insertInfo(querySubmitTabooWord, params);
   },
   removeTabooWord: (params) => {
     return client.query(queryRemoveTabooWord, params);
