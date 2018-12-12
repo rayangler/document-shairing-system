@@ -1,0 +1,27 @@
+<div id="top">
+  <h1>{{file_name}}</h1>
+  <h3>Owned by: {{name}}</h3>
+</div>
+
+<div id="center">
+  <div id="lhs_file_gui">
+    <button class="button" type="submit" form="file_text">Make Changes</button>
+    <form>
+      <button class="button" type="submit" formaction="/file/{{file_id}}/lock" formmethod="post">Lock Document</button>
+      <button class="button" type="submit" formaction="/file/{{file_id}}/unlock" formmethod="post">Unlock Document</button>
+      <button class="button" type="submit" formaction="/file/{{file_id}}/manage" formmethod="get">Manage File</button>
+      <button class="button" type="submit" formaction="/file/{{file_id}}/version" formmethod="post">Version History</button>
+    </form>
+  </div>
+  <div id="text_file">
+    <form action="/file/{{file_id}}/update" method="post" id="file_text">
+      <textarea name="text">{{file_text}}</textarea>
+    </form>
+  </div>
+  <div id="rhs_file_gui">
+    <form>
+      <button class="button" type="submit" formaction="/file/{{file_id}}/complaint"
+        formmethod="get">File Complaint</button>
+    </form>
+  </div>
+</div>
