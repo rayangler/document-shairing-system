@@ -102,3 +102,38 @@ router.post('/:file_id/complaint', (req, res) => {
   ]);
   res.redirect('back');
 });
+
+async function versionRetrieval(file_id, current_version, current_text, old_version){
+    var lines = current_text.split("\r\n");
+    if (lines[lines.length-1] == ''){
+      lines.pop();
+    }
+    var retStr = "";
+    for(i = current_version-1; i >= old_version; i--){
+      console.log('Iteration: ' + i);
+      var rows1 = await db.getHistoryFileInfo([file_id, i]);
+      console.log(rows1);
+      var commands = rows1[0].history_text.split("; ");
+      for(j = 0; j < commands.length; j++){
+        c = commands[j].split(" ");
+        if(c[0] == "update"){
+          lines[parseInt(c[1]) - 1] = c.slice(2, c.length).join(" ");
+        } else if(c[0] == "delete"){
+          lines[parseInt(c[1]) - 1] = "";
+        } else{
+          lines.push(c[1]);
+        }
+      }
+      lines = lines.filter(function(e){return e});  //removes all "" from lines
+    }
+    for(i = 0; i < lines.length; i++){
+      retStr = retStr + lines[i] + "\r\n";
+    }
+    return retStr
+}
+
+router.post('/:file_id/version', async (req, res) => {
+  var rows = await db.getFileInfo([req.params.file_id]);
+  var result = await versionRetrieval(req.params.file_id, 3, rows[0].file_text, 0);
+  console.log(result);
+});

@@ -24,8 +24,7 @@ CREATE TABLE IF NOT EXISTS users(
   username VARCHAR(255) UNIQUE,
   email VARCHAR(255) UNIQUE,
   user_type VARCHAR(255) DEFAULT 'guest',
-  password VARCHAR(255) NOT NULL DEFAULT 'password',
-  CHECK (password <> '')
+  password VARCHAR(255) NOT NULL DEFAULT 'password'
 );`;
 // Profiles Table. Profiles are linked to users and contain most of the
 // information for each profile.
@@ -244,10 +243,10 @@ JOIN profiles ON users.id = profiles.user_id
 LEFT JOIN files ON users.id = files.user_id
 WHERE users.id = $1 AND files.file_name ILIKE '%' || $2 || '%'
 ORDER BY created_on DESC;`;
-const queryHistoryFileInfo = `
-SELECT * FROM history_files
+const queryHistoryFileInfo =
+`SELECT * FROM history_files
 JOIN files ON history_files.id = files.id
-WHERE history_files.id = $1;`;
+WHERE history_files.id = $1 AND history_files.version = $2;`;
 const queryInviteValidUsers = `
 SELECT username FROM users
 WHERE username != $1 AND user_type != 'guest' AND NOT EXISTS
