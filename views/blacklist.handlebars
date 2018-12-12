@@ -4,7 +4,7 @@
   </div>
   <div id="submit_taboo">
     <form action="/blacklist/submit" method="post">
-      <input type="text" name="submit_word">
+      <input type="text" placeholder="Submit suggestion" name="submit_word">
       <input type="submit" value="Submit">
     </form>
     <br/>
@@ -13,19 +13,23 @@
     <tr>
       <th>Taboo Word</th>
       <th>Submitted by</th>
+      {{#if data.isSuperUser}}
       <th class="delete">Delete?</th>
+      {{/if}}
     </tr>
     {{#each data.rows}}
-      <tr>
-        <td>{{taboo_word}}</td>
-        <td>{{submitted_by}}</td>
-        <td class="delete">
-          <form action="/blacklist/delete_taboo" method="post">
-            <input type="hidden" name="taboo_word" value="{{taboo_word}}">
-            <input type="submit" value="X">
-          </form>
-        </td>
-      </tr>
+    <tr>
+      <td>{{taboo_word}}</td>
+      <td>{{submitted_by}}</td>
+      {{#if ../data.isSuperUser}}
+      <td class="delete">
+        <form action="/blacklist/delete_taboo" method="post">
+          <input type="hidden" name="taboo_word" value="{{taboo_word}}">
+          <input type="submit" value="X">
+        </form>
+      </td>
+      {{/if}}
+    </tr>
     {{/each}}
   </table>
 </div>

@@ -52,7 +52,7 @@ router.get('/taboo', async (req, res) => {
   var data = {};
   data.base_url = req.baseUrl;
   data.taboo = true;
-  data.taboo_suggestions = await db.getSuggestedTabooWords([]);
+  data.taboo_suggestions = await db.getSuggestedTabooWords();
   data.user_type = await db.getUserType([req.app.get('username')]);
   console.log(data);
   res.render('inbox', {data});
