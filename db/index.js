@@ -291,6 +291,26 @@ const querySpecificUsersInterests = `
 SELECT interest_name, interest_id FROM interests
 NATURAL JOIN user_interests
 WHERE user_id = $1;`
+const queryUsersListWithoutInterest = `
+SELECT DISTINCT username, profiles.name, user_type, users.id AS user_id FROM users
+JOIN profiles ON profiles.user_id = users.id
+LEFT JOIN user_interests ON user_interests.user_id = users.id
+LEFT JOIN interests ON interests.interest_id = user_interests.interest_id
+WHERE (profiles.name ILIKE '%' || $1 || '%'
+  OR users.username ILIKE '%' || $1 || '%') AND
+  (EXISTS
+    (SELECT 1 FROM user_interests WHERE interest_name ILIKE $2)
+  OR NOT EXISTS
+    (SELECT 1 FROM user_interests WHERE user_id = users.id));`;
+const queryUsersListWithInterest = `
+SELECT DISTINCT username, profiles.name, user_type, users.id AS user_id FROM users
+JOIN profiles ON profiles.user_id = users.id
+LEFT JOIN user_interests ON user_interests.user_id = users.id
+LEFT JOIN interests ON interests.interest_id = user_interests.interest_id
+WHERE (profiles.name ILIKE '%' || $1 || '%'
+  OR users.username ILIKE '%' || $1 || '%') AND
+  (EXISTS
+    (SELECT 1 FROM user_interests WHERE interest_name ILIKE $2));`;
 
 // Updates
 const queryUpdatePublicity = `
@@ -467,5 +487,12 @@ module.exports = {
   },
   getValidInterests: (params) => {
     return getInfo(queryInterestsToChoose, params);
+  },
+  getUsersList: (params) => {
+    if (params[1] == '') {
+      params[1] = '%%'
+      return getInfo(queryUsersListWithoutInterest, params);
+    }
+    return getInfo(queryUsersListWithInterest, params);
   }
 }
