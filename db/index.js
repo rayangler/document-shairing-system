@@ -92,6 +92,18 @@ CREATE TABLE IF NOT EXISTS complaints(
   complaint_text TEXT,
   timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );`
+// Interests Table. A table for interests built into the system.
+const createInterestsTable = `
+CREATE TABLE IF NOT EXISTS interests(
+  interest_id SERIAL PRIMARY KEY,
+  interest_name VARCHAR(255) UNIQUE
+);`
+// User Interests Table. A table keeping track of all users' interests.
+const createUserInterestsTable = `
+CREATE TABLE IF NOT EXISTS user_interests(
+  user_id INTEGER REFERENCES users(id),
+  interest_id INTEGER REFERENCES interests(interest_id)
+);`
 
 client.query(createUsersTable, (err, res) => {
   if (err) console.log(err.stack);
@@ -120,6 +132,12 @@ client.query(createUsersBlacklistTable, (err, res) => {
 client.query(createComplaintsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+client.query(createInterestsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createUserInterestsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
 
 // Inserts
 const queryInsertUser = `INSERT INTO users(username, email)
@@ -142,6 +160,39 @@ INSERT INTO complaints(complainer_id, file_id, recipient, subject, complaint_tex
 VALUES ($1, $2, $3, $4, $5)`;
 const querySubmitApplication = `INSERT INTO membershipApplications(username, picture_url, technical_interests)
 VALUES($1, $2, $3)`;
+// Interests directly added to the Interests Table.
+const queryInsertInterest = `
+INSERT INTO interests(interest_name)
+VALUES ($1)
+ON CONFLICT (interest_name)
+DO NOTHING;`
+const queryInsertUserInterest = `
+INSERT INTO user_interests(user_id, interest_id)
+SELECT $1, interest_id FROM interests
+WHERE interests.interest_name = $2;`;
+
+// Inserts 15 chosen interests:
+function insertInterests() {
+  const interests = [
+    'Algorithms',
+    'Big Data',
+    'Data Mining',
+    'Databases',
+    'Statistical Analysis',
+    'Coding',
+    'Debugging',
+    'Network Security',
+    'Operating Systems',
+    'Testing',
+    'Blogging',
+    'Web Analytics'
+  ]
+  var length = interests.length;
+  for (var i = 0; i < length; i++) {
+    client.query(queryInsertInterest, [interests[i]]);
+  }
+}
+insertInterests();
 
 // Selects
 const queryLoginUser = `
@@ -226,6 +277,16 @@ SELECT username, picture_url, technical_interests FROM membershipApplications;`;
 const queryUserType = `
 SELECT user_type from users
 WHERE username = $1;`;
+const queryInterestsToChoose = `
+SELECT * FROM interests
+WHERE NOT EXISTS
+(SELECT 1 FROM user_interests
+  WHERE user_id = $1 AND user_interests.interest_id = interests.interest_id);`;
+// Gets user interests for a single user
+const querySpecificUsersInterests = `
+SELECT interest_name, interest_id FROM interests
+NATURAL JOIN user_interests
+WHERE user_id = $1;`
 
 // Updates
 const queryUpdatePublicity = `
@@ -257,6 +318,9 @@ WHERE taboo_word = $1;`;
 const queryResolveComplaint = `
 DELETE FROM complaints
 WHERE complainer_id = $1 AND file_id = $2 AND subject = $3;`;
+const queryDeleteUserInterest = `
+DELETE FROM user_interests
+WHERE user_id = $1 AND interest_id = $2;`;
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -377,5 +441,17 @@ module.exports = {
   },
   resolveComplaint: (params) => {
     return client.query(queryResolveComplaint, params);
+  },
+  addUserInterest: (params) => {
+    return insertInfo(queryInsertUserInterest, params);
+  },
+  getUserInterests: (params) => {
+    return getInfo(querySpecificUsersInterests, params);
+  },
+  deleteUserInterest: (params) => {
+    return client.query(queryDeleteUserInterest, params);
+  },
+  getValidInterests: (params) => {
+    return getInfo(queryInterestsToChoose, params);
   }
 }

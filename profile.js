@@ -31,6 +31,13 @@ router.get('/:id', async (req, res) => {
   if (userType == 'guest') {
     data.isGuestUser = true;
   };
+  data.interests = await db.getUserInterests([id]);
+  if (id == req.app.get('userId')) {
+    data.isTheirProfile = true;
+  }
+  data.user_id = id;
+  data.valid_interests = await db.getValidInterests([req.app.get('userId')]);
+  console.log(data);
   res.render('profile', {data});
 });
 
@@ -42,4 +49,14 @@ router.post('/submit_application', (req, res) => {
   db.insertNewApplication([username, pictureUrl, technicalInterests]);
   console.log('Application submitted for: ' + username);
   res.redirect(req.baseUrl + '/'+ req.app.get('userId'));
-})
+});
+
+router.post('/:id/delete_interest', (req, res) => {
+  db.deleteUserInterest([req.params.id, req.body.interest_id]);
+  res.redirect('back');
+});
+
+router.post('/:id/add_interest', (req, res) => {
+  db.addUserInterest([req.params.id, req.body.add_interest]);
+  res.redirect('back');
+});
