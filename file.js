@@ -43,7 +43,7 @@ router.use('/:file_id/manage', (req, res, next) => {
 
 router.post('/:file_id/lock', (req, res) => {
   //if(req.app.get('userType') != "guest"){
-    db.addEditor([req.app.get('userId'), req.params.file_id]);
+  db.addEditor([req.app.get('userId'), req.params.file_id]);
   //}
   res.redirect('back');
 });
@@ -84,13 +84,16 @@ router.post('/:file_id/update', async (req, res) => {
     }
 
     var bodyText = req.body.text;
+    console.log('1', bodyText)
     for(i=0; i<tabooList.length; i++) {
       console.log('Changing: ' + tabooList[i]);
       var re = new RegExp(tabooList[i], 'g');
       bodyText = bodyText.replace(re, 'UNK')
-      // var resd = bodyText.replace(/${tabooWordsArray[0]}/gi, "UNK");
     }
 
+    // var re2 = new RegExp("      ", 'g');
+    // bodyText = bodyText.replace(re2, '');
+    
     if (newLines[newLines.length-1] == ''){
       newLines.pop();
     }
@@ -101,25 +104,24 @@ router.post('/:file_id/update', async (req, res) => {
     var retStr = "";
     var index = 0;
     if(oldLines.length == newLines.length){
-  		for(i = 0; i < newLines.length; i++){
-  			if(newLines[i] != oldLines[i]){
-  				retStr = retStr + "update " + (i+1) + " " + oldLines[i] + "; ";
-  			}
-  		}
-    } else{
-        for(i = 0; i < newLines.length; i++){
-          if(oldLines[index] != newLines[i]){
-            retStr = retStr + "delete " + (i+1) + "; "
-          } else{
-            index++;
-          }
-        }
-        for(i = index; i < oldLines.length; i++){
-          retStr = retStr + "add " + oldLines[i] + "; "
+      for(i = 0; i < newLines.length; i++){
+        if(newLines[i] != oldLines[i]){
+          retStr = retStr + "update " + (i+1) + " " + oldLines[i] + "; ";
         }
       }
+    } else{
+      for(i = 0; i < newLines.length; i++){
+        if(oldLines[index] != newLines[i]){
+          retStr = retStr + "delete " + (i+1) + "; "
+        } else{
+          index++;
+        }
+      }
+      for(i = index; i < oldLines.length; i++){
+        retStr = retStr + "add " + oldLines[i] + "; "
+      }
+    }
     retStr = retStr.substring(0, retStr.length - 2);
-
 
     var version = rows[0].current_version;
     db.addHistoryFile([req.params.file_id, version, retStr]);
@@ -146,32 +148,32 @@ router.post('/:file_id/complaint', (req, res) => {
 });
 
 async function versionRetrieval(file_id, current_version, current_text, old_version){
-    var lines = current_text.split("\r\n");
-    if (lines[lines.length-1] == ''){
-      lines.pop();
-    }
-    var retStr = "";
-    for(i = current_version-1; i >= old_version; i--){
-      console.log('Iteration: ' + i);
-      var rows1 = await db.getHistoryFileInfo([file_id, i]);
-      console.log(rows1);
-      var commands = rows1[0].history_text.split("; ");
-      for(j = 0; j < commands.length; j++){
-        c = commands[j].split(" ");
-        if(c[0] == "update"){
-          lines[parseInt(c[1]) - 1] = c.slice(2, c.length).join(" ");
-        } else if(c[0] == "delete"){
-          lines[parseInt(c[1]) - 1] = "";
-        } else{
-          lines.push(c[1]);
-        }
+  var lines = current_text.split("\r\n");
+  if (lines[lines.length-1] == ''){
+    lines.pop();
+  }
+  var retStr = "";
+  for(i = current_version-1; i >= old_version; i--){
+    console.log('Iteration: ' + i);
+    var rows1 = await db.getHistoryFileInfo([file_id, i]);
+    console.log(rows1);
+    var commands = rows1[0].history_text.split("; ");
+    for(j = 0; j < commands.length; j++){
+      c = commands[j].split(" ");
+      if(c[0] == "update"){
+        lines[parseInt(c[1]) - 1] = c.slice(2, c.length).join(" ");
+      } else if(c[0] == "delete"){
+        lines[parseInt(c[1]) - 1] = "";
+      } else{
+        lines.push(c[1]);
       }
-      lines = lines.filter(function(e){return e});  //removes all "" from lines
     }
-    for(i = 0; i < lines.length; i++){
-      retStr = retStr + lines[i] + "\r\n";
-    }
-    return retStr
+    lines = lines.filter(function(e){return e});  //removes all "" from lines
+  }
+  for(i = 0; i < lines.length; i++){
+    retStr = retStr + lines[i] + "\r\n";
+  }
+  return retStr
 }
 
 router.post('/:file_id/version', async (req, res) => {
@@ -182,4 +184,5 @@ router.post('/:file_id/version', async (req, res) => {
 
 router.post('/:file_id/rename', (req, res) => {
   db.renameFile([req.params.file_id, req.body.rename]);
+  res.redirect('back');
 });
