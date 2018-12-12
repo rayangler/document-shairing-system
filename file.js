@@ -13,6 +13,21 @@ router.get('/:file_id', async (req, res) => {
   // Query file contents and info here
   var rows = await db.getFileInfo([file_id]);
   var data = rows[0];
+  data.isFileOwner = await db.checkIsFileOwner([req.app.get('userId'), file_id]);
+  data.isCollaborator = await db.checkIsCollaborator([req.app.get('username'), file_id]);
+  data.locker = await db.getUserUpdating([file_id]);
+
+  var publicity = rows[0].publicity;
+  if (publicity == 'public') {
+    data.isPublic = true;
+  } else if (publicity == 'restricted') {
+    data.isRestricted = true;
+  } else if (publicity == 'shared') {
+    data.isShared = true;
+  } else if (publicity == 'private') {
+    data.isPrivate = true;
+  }
+
   data.file_id = file_id;
   req.app.set('file_id', file_id);
   file_text = data.file_text;

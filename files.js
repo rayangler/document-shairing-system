@@ -31,6 +31,7 @@ router.get('/:user_id', async (req, res) => {
   data.rows = rows;
   data.username = await db.getUsername([user_id]);
   data.user_id = user_id;
+  data.collaborator_files = await db.getCollaboratorFiles([user_id]);
 
   var userType = await db.getUserType([req.app.get('username')]);
   if (userType == 'guest') {

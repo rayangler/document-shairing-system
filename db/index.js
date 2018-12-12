@@ -355,6 +355,20 @@ const queryCheckIsFileOwner = `
 SELECT 1 FROM files
 JOIN users ON files.user_id = users.id
 WHERE users.id = $1 AND files.id = $2;`
+const queryCollaboratorFiles = `
+SELECT profiles.name, file_name, current_version, created_on, files.id AS file_id FROM users
+JOIN profiles ON users.id = profiles.user_id
+LEFT JOIN collaborators ON collaborators.username = users.username
+JOIN files ON files.id = collaborators.file_id
+WHERE users.id = $1
+ORDER BY created_on DESC;`;
+const queryCheckIsCollaborator = `
+SELECT 1 FROM collaborators
+WHERE username = $1 AND file_id = $2;`
+const queryCheckUserUpdating = `
+SELECT username FROM users
+JOIN files ON files.editor_id = users.id
+WHERE files.id = $1;`
 
 // Updates
 const queryUpdatePublicity = `
@@ -601,6 +615,25 @@ module.exports = {
       return false;
     } else {
       return true;
+    }
+  },
+  getCollaboratorFiles: (params) => {
+    return getInfo(queryCollaboratorFiles, params);
+  },
+  checkIsCollaborator: async (params) => {
+    var rows = await getInfo(queryCheckIsCollaborator, params);
+    if (rows.length == 0) {
+      return false;
+    } else {
+      return true;
+    }
+  },
+  getUserUpdating: async (params) => {
+    var rows = await getInfo(queryCheckUserUpdating, params);
+    if (rows.length == 0) {
+      return '';
+    } else {
+      return rows[0].username;
     }
   }
 }
