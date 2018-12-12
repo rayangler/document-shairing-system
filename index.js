@@ -48,7 +48,8 @@ app.post('/create_new_file', async (req, res) => {
 app.post('/create_user', async (req, res) => {
   const username = req.body.username2;
   const email = req.body.email2;
-  var rows = await db.insertNewUser([username, email]);
+  const password = req.body.password2;
+  var rows = await db.insertNewUser([username, email, password]);
   var userId = rows[0].id;
   app.set('userId', userId); // App sets logged-in user to the new user.
   app.set('username', username);
@@ -72,16 +73,28 @@ app.post('/create_profile', (req, res) => {
 // Should probably add password later though.
 app.post('/login_user', async (req, res) => {
   const username = req.body.username1;
-  const email = req.body.email1;
-  var rows = await db.getLoginInfo([username, email]);
+  const password = req.body.password1;
+  var rows = await db.getLoginInfo([username, password]);
+
+  // No login credentials match. Invalid user.
+  if (rows.length == 0) {
+    res.redirect('back');
+    return;
+  }
+
   var userId = rows[0].id;
   var userType = await db.getUserType([username]);
   app.set('userId', userId);
   app.set('username', username);
   app.set('userType', userType);
-  console.log('Logged in. User: ' + userId);
-  console.log('Username: ' + username);
-  console.log('User type: ' + userType);
+
+  // Checks to see if the user has created a profile.
+  var isProfileExists = await db.checkProfileExists([userId]);
+  if (!isProfileExists) {
+    res.redirect('/create_profile');
+    return;
+  }
+
   res.redirect('/files/' + userId);
 });
 

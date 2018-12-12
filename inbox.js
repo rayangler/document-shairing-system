@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
     data.isGuestUser = true
     res.render('inbox', {data});
   } else {
-    res.redirect(req.baseUrl + 'invites')
+    res.redirect(req.baseUrl + '/invites')
   }
 });
 

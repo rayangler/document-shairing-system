@@ -1,17 +1,19 @@
 <div id="login">
   <form action="/login_user" method="post">
       <h2>Login Existing User</h2>
-      <div>Username: <input type="text" name="username1"></div>
-      <div>Email: <input type="text" name="email1"></div>
+      <div>Username: <input type="text" name="username1" required></div>
+      <div>Password: <input type="password" name="password1" required></div>
       <br/>
       <input type="submit" value="Login">
   </form>
 
   <form action="/create_user" method="post">
       <h2>Create New User</h2>
-      <div>Username: <input type="text" name="username2"></div>
-      <div>Email: <input type="text" name="email2"></div>
+      <div>Username: <input type="text" name="username2" required></div>
+      <div>Email: <input type="text" name="email2" required></div>
+      <div>Password: <input type="password" name="password2" required></div>
       <br/>
+
       <input type="submit" value="Create New User">
   </form>
 </div>

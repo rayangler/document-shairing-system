@@ -23,7 +23,9 @@ CREATE TABLE IF NOT EXISTS users(
   id SERIAL PRIMARY KEY,
   username VARCHAR(255) UNIQUE,
   email VARCHAR(255) UNIQUE,
-  user_type VARCHAR(255) DEFAULT 'guest'
+  user_type VARCHAR(255) DEFAULT 'guest',
+  password VARCHAR(255) NOT NULL,
+  CHECK (password <> '')
 );`;
 // Profiles Table. Profiles are linked to users and contain most of the
 // information for each profile.
@@ -152,8 +154,8 @@ client.query(createUserInterestsTable, (err, res) => {
 });
 
 // Inserts
-const queryInsertUser = `INSERT INTO users(username, email)
-VALUES($1, $2) RETURNING id`;
+const queryInsertUser = `INSERT INTO users(username, email, password)
+VALUES($1, $2, $3) RETURNING id`;
 const queryInsertProfile = `INSERT INTO profiles(user_id, name, picture_url, bio)
 VALUES($1, $2, $3, $4)`;
 const queryCreateNewFile = `INSERT INTO files(user_id)
@@ -184,6 +186,14 @@ const queryInsertUserInterest = `
 INSERT INTO user_interests(user_id, interest_id)
 SELECT $1, interest_id FROM interests
 WHERE interests.interest_name = $2;`;
+const queryInsertAdminSuperuser = `
+INSERT INTO users(username, email, user_type, password)
+VALUES('admin', 'admin@email.com', 'super', 'admin')
+ON CONFLICT (username)
+DO NOTHING;`;
+
+// Insert default superuser
+client.query(queryInsertAdminSuperuser);
 
 // Inserts 15 chosen interests:
 function insertInterests() {
@@ -211,7 +221,7 @@ insertInterests();
 // Selects
 const queryLoginUser = `
 SELECT * FROM users
-WHERE username = $1 AND email = $2;`;
+WHERE username = $1 AND password = $2;`;
 const queryProfilePage = `
 SELECT * FROM users
 JOIN profiles ON profiles.user_id = users.id
@@ -239,7 +249,7 @@ JOIN files ON history_files.id = files.id
 WHERE history_files.id = $1;`;
 const queryInviteValidUsers = `
 SELECT username FROM users
-WHERE username != $1 AND NOT EXISTS
+WHERE username != $1 AND user_type != 'guest' AND NOT EXISTS
 (SELECT 1 FROM invites
   WHERE to_user = username AND file_id = $2)
 AND NOT EXISTS
@@ -330,6 +340,10 @@ WHERE (profiles.name ILIKE '%' || $1 || '%'
   OR users.username ILIKE '%' || $1 || '%') AND
   (EXISTS
     (SELECT 1 FROM user_interests WHERE interest_name ILIKE $2));`;
+const queryCheckProfileExists = `
+SELECT 1 FROM profiles
+JOIN users ON profiles.user_id = users.id
+WHERE users.id = $1;`
 
 // Updates
 const queryUpdatePublicity = `
@@ -544,5 +558,13 @@ module.exports = {
       return getInfo(queryUsersListWithoutInterest, params);
     }
     return getInfo(queryUsersListWithInterest, params);
+  },
+  checkProfileExists: async (params) => {
+    var rows = await getInfo(queryCheckProfileExists, params);
+    if (rows.length == 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }
