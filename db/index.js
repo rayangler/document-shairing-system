@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS interests(
 );`
 // User Interests Table. A table keeping track of all users' interests.
 const createUserInterestsTable = `
-CREATE TABLE IF NOT EXISTS users_interests(
+CREATE TABLE IF NOT EXISTS user_interests(
   user_id INTEGER REFERENCES users(id),
   interest_id INTEGER REFERENCES interests(interest_id)
 );`
