@@ -98,6 +98,10 @@ app.post('/login_user', async (req, res) => {
   res.redirect('/files/' + userId);
 });
 
+app.get('/logout', (req, res) => {
+  res.redirect('/');
+});
+
 const hbs = hb.create();
 
 hbs.getPartials().then(function(partials) {

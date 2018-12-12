@@ -368,6 +368,10 @@ ORDER BY created_on DESC;`;
 const queryCheckIsCollaborator = `
 SELECT 1 FROM collaborators
 WHERE username = $1 AND file_id = $2;`
+const queryCheckUserUpdating = `
+SELECT username FROM users
+JOIN files ON files.editor_id = users.id
+WHERE files.id = $1;`
 
 // Updates
 const queryUpdatePublicity = `
@@ -625,6 +629,14 @@ module.exports = {
       return false;
     } else {
       return true;
+    }
+  },
+  getUserUpdating: async (params) => {
+    var rows = await getInfo(queryCheckUserUpdating, params);
+    if (rows.length == 0) {
+      return '';
+    } else {
+      return rows[0].username;
     }
   }
 }
