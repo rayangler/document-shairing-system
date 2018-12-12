@@ -7,12 +7,19 @@ const db = require('./db');
 
 module.exports = router;
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   if (!req.app.get('userId')) {
     res.redirect('/');
     return;
   }
-  res.redirect(req.baseUrl + '/invites');
+  var userType = await db.getUserType([req.app.get('username')]);
+  if (userType == 'guest') {
+    var data = {}
+    data.isGuestUser = true
+    res.render('inbox', {data});
+  } else {
+    res.redirect(req.baseUrl + 'invites')
+  }
 });
 
 router.get('/invites', async (req, res) => {
