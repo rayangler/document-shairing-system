@@ -192,6 +192,7 @@ VALUES('admin', 'admin@email.com', 'super', 'admin')
 ON CONFLICT (username)
 DO NOTHING;`;
 
+
 // Insert default superuser
 client.query(queryInsertAdminSuperuser);
 
@@ -347,6 +348,10 @@ WHERE users.id = $1;`
 const queryUsername = `
 SELECT username FROM users
 WHERE users.id = $1;`;
+const queryCheckIsFileOwner = `
+SELECT 1 FROM files
+JOIN users ON files.user_id = users.id
+WHERE users.id = $1 AND files.id = $2;`
 
 // Updates
 const queryUpdatePublicity = `
@@ -361,6 +366,10 @@ const queryRemoveEditor = `
 UPDATE files
 SET editor_id = NULL
 WHERE id = $2 AND editor_id = $1;`;
+const queryRemoveEditorForced = `
+UPDATE files
+SET editor_id = NULL
+WHERE id = $1;`;
 const queryUpdateText = `
 UPDATE files
 SET file_text = $1,
@@ -522,6 +531,9 @@ module.exports = {
   removeEditor: (params) => {
     return client.query(queryRemoveEditor, params);
   },
+  removeEditorForced: (params) => {
+    return client.query(queryRemoveEditorForced, params);
+  },
   updateText: (params) => {
     return client.query(queryUpdateText, params);
   },
@@ -576,5 +588,13 @@ module.exports = {
   },
   searchFiles: (params) => {
     return getInfo(querySearchFiles, params);
+  },
+  checkIsFileOwner: async (params) => {
+    var rows = await getInfo(queryCheckIsFileOwner, params);
+    if (rows.length == 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }
