@@ -24,7 +24,7 @@ app.use('/blacklist', require('./blacklist'));
 app.use('/users', require('./users'));
 
 // Landing page.
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   res.render('login');
 });
 

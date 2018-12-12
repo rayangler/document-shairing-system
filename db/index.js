@@ -275,6 +275,10 @@ const queryConfirmedTabooWords = `
 SELECT * FROM tabooBlacklist
 WHERE status = 'confirmed'
 ORDER BY taboo_word ASC;`;
+const queryListTabooWords =`
+SELECT taboo_word FROM tabooBlacklist
+WHERE status = 'confirmed'
+ORDER BY taboo_word ASC;`;
 const queryFilePublicity = `
 SELECT publicity FROM files
 WHERE id = $1;`;
@@ -487,6 +491,9 @@ module.exports = {
   },
   getConfirmedTabooWords: (params) => {
     return getInfo(queryConfirmedTabooWords, params);
+  },
+  getListTabooWords: (params) => {
+    return getInfo(queryListTabooWords, params);
   },
   getPendingApplications: (params) => {
     return getInfo(queryPendingApplications, params);
