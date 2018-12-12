@@ -1,0 +1,26 @@
+<div id="taboo_suggestions_div">
+  <h3>Suggested Taboo Words</h3>
+  <hr/>
+{{#if data.guest}}
+  <table>
+    <tr>
+      <th>Word</th>
+      <th>Suggested By</th>
+      <th>Actions</th>
+    </tr>
+    {{#each data.taboo_suggestions}}
+      <tr>
+        <td>{{taboo_word}}</td>
+        <td>{{submitted_by}}</td>
+        <td>
+          <form method="post">
+            <input type="hidden" name="tabooWord" value="{{taboo_word}}">
+            <input type="submit" value="Accept" formaction="{{../data.base_url}}/accept_word">
+            <input type="submit" value="Decline" formaction="{{../data.base_url}}/decline_word"
+              style="background-color: #F0F0F0; color: #000">
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </table>
+</div>
