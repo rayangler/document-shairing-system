@@ -43,6 +43,23 @@ router.post('/decline_invite', (req, res) => {
   res.redirect('back');
 });
 
+router.get('/complaints', async (req, res) => {
+  var data = {};
+  data.complaints = true;
+  data.base_url = req.baseUrl;
+  data.user_type = await db.getUserType([req.app.get('username')]);
+  data.owner_complaints = await db.getOwnerComplaints([req.app.get('userId')]);
+  /*
+  if (data.user_type == 'super') {
+    data.super_user = true;
+    data.su_complaints = await db.getSUComplaints([req.app.get('userId')]);
+  }*/
+  res.render('inbox', {data});
+});
+
+router.post('/resolve_complaint', (req, res) => {
+  res.redirect('back');
+});
 router.post('/accept_application', (req, res) => {
   db.acceptApplication([req.app.get('username')]);
   console.log(req.app.get('user_type'));
@@ -51,5 +68,4 @@ router.post('/accept_application', (req, res) => {
 
 router.post('/decline_application', (req, res) => {
   db.declineApplication([req.app.get('username')]);
-  res.redirect('back');
 });

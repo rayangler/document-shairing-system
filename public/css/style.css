@@ -219,6 +219,18 @@ table td, th {
   margin-left: 25%;
 }
 
+.complaint_form_container form {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.complaint_form_container textarea {
+  width: 75%;
+}
+
 input[type=textarea] {
   width: 300px;
   box-sizing: border-box;

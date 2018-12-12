@@ -75,13 +75,23 @@ const createCollaboratorsTable = `
 CREATE TABLE IF NOT EXISTS collaborators(
   username VARCHAR(255) REFERENCES users(username),
   file_id INTEGER REFERENCES files(id)
-);`;
-// Blacklist Table. A table for blacklisted users for each file.
+);`
+// Blacklist Users Table. A table for blacklisted users for each file.
 const createUsersBlacklistTable = `
 CREATE TABLE IF NOT EXISTS users_blacklist(
   user_id INTEGER REFERENCES users(id),
   file_id INTEGER REFERENCES files(id)
 );`;
+// Complaints Table. A table for complaints, sent to document owners or SUs.
+const createComplaintsTable = `
+CREATE TABLE IF NOT EXISTS complaints(
+  complainer_id INTEGER REFERENCES users(id),
+  file_id INTEGER REFERENCES files(id),
+  recipient VARCHAR(255),
+  subject TEXT,
+  complaint_text TEXT,
+  timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);`
 
 client.query(createUsersTable, (err, res) => {
   if (err) console.log(err.stack);
@@ -107,6 +117,9 @@ client.query(createCollaboratorsTable, (err, res) => {
 client.query(createUsersBlacklistTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+client.query(createComplaintsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
 
 // Inserts
 const queryInsertUser = `INSERT INTO users(username, email)
@@ -124,6 +137,9 @@ VALUES($1, $2, $3)`;
 const querySubmitTabooWord = `INSERT INTO tabooBlacklist(taboo_word, submitted_by)
 VALUES($1, $2)`;
 const queryAddCollaborator = `INSERT INTO collaborators VALUES ($1, $2)`;
+const queryInsertComplaint = `
+INSERT INTO complaints(complainer_id, file_id, recipient, subject, complaint_text)
+VALUES ($1, $2, $3, $4, $5)`;
 const querySubmitApplication = `INSERT INTO membershipApplications(username, picture_url, technical_interests)
 VALUES($1, $2, $3)`;
 
@@ -191,6 +207,13 @@ const queryBlacklistedUsers = `
 SELECT username FROM users
 JOIN users_blacklist ON users.id = users_blacklist.user_id
 WHERE file_id = $1;`;
+const queryOwnerComplaints = `
+SELECT subject, users.username AS complainer, file_name, complaints.timestamp,
+  complaint_text FROM complaints
+JOIN files ON files.id = complaints.file_id
+JOIN users ON complainer_id = users.id
+WHERE files.user_id = $1
+ORDER BY complaints.timestamp DESC;`;
 const queryPendingApplications = `
 SELECT username, picture_url, technical_interests FROM membershipApplications;`;
 const queryUserType = `
@@ -329,6 +352,12 @@ module.exports = {
   },
   removeBlacklistedUser: (params) => {
     return client.query(queryRemoveBlacklistedUser, params);
+  },
+  submitNewComplaint: (params) => {
+    return insertInfo(queryInsertComplaint, params);
+  },
+  getOwnerComplaints: (params) => {
+    return getInfo(queryOwnerComplaints, params);
   },
   removeTabooWord: (params) => {
     return client.query(queryRemoveTabooWord, params);
