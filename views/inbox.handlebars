@@ -1,5 +1,6 @@
 
 <div class="vertical_menu" id="inbox_div">
+<<<<<<< HEAD
   <h1>Inbox</h1>
   <div id="center">
     <div class="vertical_navbar">
@@ -22,4 +23,37 @@
       {{/if}}
     </div>
   </div>
+=======
+  {{#if data.isGuestUser}}
+    <br>
+    <div>You do not have permission for this :P</div>
+  {{else}}
+    <h1>Inbox</h1>
+
+    <div id="center">
+      <div class="vertical_navbar">
+        <form method="get">
+          <button class="button" formaction="{{data.base_url}}/invites">Invites</button>
+          <button class="button" formaction="{{data.base_url}}/complaints">Complaints</button>
+          <button class="button" formaction="{{data.base_url}}/applications">Pending Applications</button>
+        </form>
+      </div>
+
+      <div class="content">
+
+        {{#if data.invites}}
+          {{> inbox_invites this}}
+        {{else if data.complaints}}
+          {{> inbox_complaints this}}
+        {{/if}}
+
+        {{#if data.applications}}
+          {{> applications this}}
+        {{/if}}
+
+      </div>
+    </div>
+
+  {{/if}}
+>>>>>>> master
 </div>
