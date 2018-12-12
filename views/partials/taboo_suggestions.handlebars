@@ -1,0 +1,28 @@
+<div id="inbox_applications_div">
+  <h3>Pending Applications</h3>
+  <hr/>
+
+  <table>
+    <tr>
+      <th>Username</th>
+      <th>Picture</th>
+      <th>Technical Interests</th>
+      <th>Actions</th>
+    </tr>
+    {{#each data.pending_applications}}
+      <tr>
+        <td>{{username}}</td>
+        <td><img src="{{picture_url}}"/></td>
+        <td>{{technical_interests}}</td>
+        <td>
+          <form method="post">
+            <input type="submit" value="Accept"
+              formaction="{{../data.base_url}}/accept_application">
+            <input type="submit" value="Decline" formaction="{{../data.base_url}}/decline_application"
+              style="background-color: #F0F0F0; color: #000">
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </table>
+</div>
