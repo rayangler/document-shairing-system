@@ -92,6 +92,18 @@ CREATE TABLE IF NOT EXISTS complaints(
   complaint_text TEXT,
   timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );`
+// Interests Table. A table for interests built into the system.
+const createInterestsTable = `
+CREATE TABLE IF NOT EXISTS interests(
+  interest_id SERIAL PRIMARY KEY,
+  interest_name VARCHAR(255) UNIQUE
+);`
+// User Interests Table. A table keeping track of all users' interests.
+const createUserInterestsTable = `
+CREATE TABLE IF NOT EXISTS users_interests(
+  user_id INTEGER REFERENCES users(id),
+  interest_id INTEGER REFERENCES interests(interest_id)
+);`
 
 client.query(createUsersTable, (err, res) => {
   if (err) console.log(err.stack);
@@ -120,6 +132,12 @@ client.query(createUsersBlacklistTable, (err, res) => {
 client.query(createComplaintsTable, (err, res) => {
   if (err) console.log(err.stack);
 });
+client.query(createInterestsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
+client.query(createUserInterestsTable, (err, res) => {
+  if (err) console.log(err.stack);
+});
 
 // Inserts
 const queryInsertUser = `INSERT INTO users(username, email)
@@ -142,6 +160,35 @@ INSERT INTO complaints(complainer_id, file_id, recipient, subject, complaint_tex
 VALUES ($1, $2, $3, $4, $5)`;
 const querySubmitApplication = `INSERT INTO membershipApplications(username, picture_url, technical_interests)
 VALUES($1, $2, $3)`;
+// Interests directly added to the Interests Table.
+const queryInsertInterest = `
+INSERT INTO interests(interest_name)
+VALUES ($1)
+ON CONFLICT (interest_name)
+DO NOTHING;`
+
+// Inserts 15 chosen interests:
+function insertInterests() {
+  const interests = [
+    'Algorithms',
+    'Big Data',
+    'Data Mining',
+    'Databases',
+    'Statistical Analysis',
+    'Coding',
+    'Debugging',
+    'Network Security',
+    'Operating Systems',
+    'Testing',
+    'Blogging',
+    'Web Analytics'
+  ]
+  var length = interests.length;
+  for (var i = 0; i < length; i++) {
+    client.query(queryInsertInterest, [interests[i]]);
+  }
+}
+insertInterests();
 
 // Selects
 const queryLoginUser = `
