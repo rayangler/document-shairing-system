@@ -209,10 +209,17 @@ JOIN users_blacklist ON users.id = users_blacklist.user_id
 WHERE file_id = $1;`;
 const queryOwnerComplaints = `
 SELECT subject, users.username AS complainer, file_name, complaints.timestamp,
-  complaint_text FROM complaints
+  complaint_text, complaints.file_id, complaints.complainer_id FROM complaints
 JOIN files ON files.id = complaints.file_id
 JOIN users ON complainer_id = users.id
-WHERE files.user_id = $1
+WHERE files.user_id = $1 AND recipient != 'superusers'
+ORDER BY complaints.timestamp DESC;`;
+const querySUComplaints = `
+SELECT subject, users.username AS complainer, file_name, complaints.timestamp,
+  complaint_text, complaints.file_id, complaints.complainer_id FROM complaints
+JOIN files ON files.id = complaints.file_id
+JOIN users ON complainer_id = users.id
+WHERE files.user_id = $1 AND recipient = 'superusers'
 ORDER BY complaints.timestamp DESC;`;
 const queryPendingApplications = `
 SELECT username, picture_url, technical_interests FROM membershipApplications;`;
@@ -247,6 +254,9 @@ WHERE username = $1;`;
 const queryRemoveTabooWord = `
 DELETE FROM tabooBlacklist
 WHERE taboo_word = $1;`;
+const queryResolveComplaint = `
+DELETE FROM complaints
+WHERE complainer_id = $1 AND file_id = $2 AND subject = $3;`;
 
 async function getInfo(query, params) {
   var results = await client.query(query, params);
@@ -359,7 +369,13 @@ module.exports = {
   getOwnerComplaints: (params) => {
     return getInfo(queryOwnerComplaints, params);
   },
+  getSUComplaints: (params) => {
+    return getInfo(querySUComplaints, params);
+  },
   removeTabooWord: (params) => {
     return client.query(queryRemoveTabooWord, params);
+  },
+  resolveComplaint: (params) => {
+    return client.query(queryResolveComplaint, params);
   }
 }
