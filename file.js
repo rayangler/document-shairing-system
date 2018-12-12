@@ -15,6 +15,7 @@ router.get('/:file_id', async (req, res) => {
   var data = rows[0];
   data.isFileOwner = await db.checkIsFileOwner([req.app.get('userId'), file_id]);
   data.isCollaborator = await db.checkIsCollaborator([req.app.get('username'), file_id]);
+  data.locker = await db.getUserUpdating([file_id]);
 
   var publicity = rows[0].publicity;
   if (publicity == 'public') {
