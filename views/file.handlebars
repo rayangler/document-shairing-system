@@ -14,6 +14,8 @@
   {{#if isShared}}
     {{#if isCollaborator}}
       {{> file_all_permissions}}
+    {{else if isFileOwner}}
+      {{> file_all_permissions}}
     {{else}}
       <div>Cannot access file.</div>
     {{/if}}

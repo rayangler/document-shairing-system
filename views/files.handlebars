@@ -30,4 +30,25 @@
 
     {{/each}}
   </table>
+
+  <br>
+  <hr/>
+  <div> Files to Collaborate On </div>
+  <table>
+    <tr>
+      <th>File Name</th>
+      <th>Current Version</th>
+      <th>Created On</th>
+    </tr>
+    {{#each data.collaborator_files}}
+
+        <tr>
+          <td><a href="/file/{{file_id}}">{{file_name}}</a></td>
+          <td>{{current_version}}</td>
+          <td>{{created_on}}</td>
+        </tr>
+
+    {{/each}}
+  </table>
+
 </div>
