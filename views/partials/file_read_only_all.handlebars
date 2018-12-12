@@ -6,7 +6,9 @@
 <div id="center">
   <div id="lhs_file_gui">
     <form>
-      <button class="button" type="submit" formaction="/file/{{file_id}}/manage" formmethod="get">Manage File</button>
+      {{#if isFileOwner}}
+        <button class="button" type="submit" formaction="/file/{{file_id}}/manage" formmethod="get">Manage File</button>
+      {{/if}}
       <button class="button" type="submit" formaction="/file/{{file_id}}/version" formmethod="post">Version History</button>
     </form>
   </div>
